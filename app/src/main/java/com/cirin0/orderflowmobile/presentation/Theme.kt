@@ -1,6 +1,5 @@
-package com.cirin0.orderflowmobile.ui.theme
+package com.cirin0.orderflowmobile.presentation
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

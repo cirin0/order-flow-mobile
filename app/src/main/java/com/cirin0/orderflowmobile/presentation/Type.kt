@@ -1,4 +1,4 @@
-package com.cirin0.orderflowmobile.ui.theme
+package com.cirin0.orderflowmobile.presentation
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
