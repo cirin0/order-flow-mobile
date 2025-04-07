@@ -43,11 +43,13 @@ class LoginViewModel @Inject constructor(
                         data = result.data
                     )
                 }
+
                 is Resource.Error -> {
                     _state.value = LoginState(
                         error = result.message ?: "Невідома помилка"
                     )
                 }
+
                 is Resource.Loading -> {
                     _state.value = LoginState(isLoading = true)
                 }

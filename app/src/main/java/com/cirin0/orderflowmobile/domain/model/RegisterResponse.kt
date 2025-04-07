@@ -1,7 +1,7 @@
 package com.cirin0.orderflowmobile.domain.model
 
-data class LoginResponse(
+data class RegisterResponse(
     val token: String,
     val userId: String,
-    val email: String
-) 
+    val email: String,
+)
