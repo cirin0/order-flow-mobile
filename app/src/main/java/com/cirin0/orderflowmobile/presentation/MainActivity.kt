@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cirin0.orderflowmobile.presentation.navigation.MainScreen
 import com.cirin0.orderflowmobile.presentation.navigation.MainViewModel
+import com.cirin0.orderflowmobile.presentation.ui.theme.OrderFlowMobileTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

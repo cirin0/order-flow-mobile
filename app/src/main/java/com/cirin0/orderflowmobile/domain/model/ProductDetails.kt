@@ -6,6 +6,9 @@ data class ProductDetails(
     val imageUrl: String,
     val description: String,
     val price: Double,
+    val stock: Int,
+    val createdAt: String,
+    val categoryId: Int,
     val categoryName: String,
     val averageRating: Double
 )

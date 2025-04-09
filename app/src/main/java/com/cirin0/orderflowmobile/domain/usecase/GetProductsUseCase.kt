@@ -9,11 +9,6 @@ class GetProductsUseCase @Inject constructor(
     private val repository: ProductRepository
 ) {
     suspend operator fun invoke(): Resource<List<Product>> {
-        return try {
-            val products = repository.getProducts()
-            Resource.Success(products)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unknown error")
-        }
+        return repository.getProducts()
     }
 }
