@@ -7,15 +7,15 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.cirin0.orderflowmobile.presentation.cart.CartScreen
-import com.cirin0.orderflowmobile.presentation.favorites.FavoritesScreen
-import com.cirin0.orderflowmobile.presentation.home.HomeScreen
-import com.cirin0.orderflowmobile.presentation.login.LoginScreen
-import com.cirin0.orderflowmobile.presentation.product.ProductScreen
-import com.cirin0.orderflowmobile.presentation.product.ProductViewModel
-import com.cirin0.orderflowmobile.presentation.profile.ProfileScreen
-import com.cirin0.orderflowmobile.presentation.register.RegisterScreen
-import com.cirin0.orderflowmobile.presentation.register.RegisterViewModel
+import com.cirin0.orderflowmobile.presentation.screen.CartScreen
+import com.cirin0.orderflowmobile.presentation.screen.FavoritesScreen
+import com.cirin0.orderflowmobile.presentation.screen.HomeScreen
+import com.cirin0.orderflowmobile.presentation.screen.LoginScreen
+import com.cirin0.orderflowmobile.presentation.screen.ProductScreen
+import com.cirin0.orderflowmobile.presentation.screen.ProfileScreen
+import com.cirin0.orderflowmobile.presentation.screen.RegisterScreen
+import com.cirin0.orderflowmobile.presentation.screen.viewmodel.ProductViewModel
+import com.cirin0.orderflowmobile.presentation.screen.viewmodel.RegisterViewModel
 
 object NavRoutes {
     const val HOME = "home"

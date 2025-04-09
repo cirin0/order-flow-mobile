@@ -1,4 +1,4 @@
-package com.cirin0.orderflowmobile.presentation.compotent
+package com.cirin0.orderflowmobile.presentation.ui.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement

@@ -1,4 +1,4 @@
-package com.cirin0.orderflowmobile.presentation.home
+package com.cirin0.orderflowmobile.presentation.screen.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

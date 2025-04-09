@@ -1,5 +1,6 @@
-package com.cirin0.orderflowmobile.presentation.product
+package com.cirin0.orderflowmobile.presentation.screen
 
+import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -29,6 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.bumptech.glide.Glide
 import com.cirin0.orderflowmobile.domain.model.ProductDetails
+import com.cirin0.orderflowmobile.presentation.screen.viewmodel.ProductViewModel
 import com.cirin0.orderflowmobile.util.Resource
 
 @Composable
@@ -89,8 +91,8 @@ fun ProductDetails(product: ProductDetails) {
             AndroidView(
                 factory = { context ->
                     ImageView(context).apply {
-                        layoutParams = android.view.ViewGroup.LayoutParams(
-                            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
                             600 // Height in pixels
                         )
                     }

@@ -1,13 +1,16 @@
-package com.cirin0.orderflowmobile.presentation.login
+package com.cirin0.orderflowmobile.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -15,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -42,15 +46,20 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import com.cirin0.orderflowmobile.presentation.screen.viewmodel.RegisterViewModel
 
 
 @Composable
-fun LoginScreen(
-    onLoginSuccess: () -> Unit,
-    viewModel: LoginViewModel = hiltViewModel()
+fun RegisterScreen(
+    onRegisterSuccess: () -> Unit,
+    viewModel: RegisterViewModel = viewModel(),
+    navController: NavHostController,
 ) {
     val state = viewModel.state.value
+    val firstName = viewModel.firstName.value
+    val lastName = viewModel.lastName.value
     val email = viewModel.email.value
     val password = viewModel.password.value
 
@@ -60,7 +69,7 @@ fun LoginScreen(
 
     LaunchedEffect(key1 = state.isSuccess) {
         if (state.isSuccess) {
-            onLoginSuccess()
+            onRegisterSuccess()
         }
     }
 
@@ -87,13 +96,58 @@ fun LoginScreen(
                 verticalArrangement = Arrangement.Top
             ) {
                 Text(
-                    text = "Вхід",
+                    text = "Реєстрація",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(16.dp)
+
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = firstName,
+                        onValueChange = viewModel::onFirstNameChanged,
+                        modifier = Modifier.weight(1f),
+                        label = { Text("Ім'я") },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Next
+                        ),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "First Name Icon"
+                            )
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    OutlinedTextField(
+                        value = lastName,
+                        onValueChange = viewModel::onLastNameChanged,
+                        modifier = Modifier.weight(1f),
+                        label = { Text("Прізвище") },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        ),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Last Name Icon"
+                            )
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
                     value = email,
@@ -113,8 +167,7 @@ fun LoginScreen(
                     shape = RoundedCornerShape(8.dp)
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-
+                Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = password,
                     onValueChange = viewModel::onPasswordChanged,
@@ -145,7 +198,7 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
-                    onClick = { viewModel.login() },
+                    onClick = { viewModel.register() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -155,10 +208,15 @@ fun LoginScreen(
                     if (state.isLoading) {
                         CircularProgressIndicator(
                             color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.height(24.dp)
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .width(25.dp)
                         )
                     } else {
-                        Text(text = "Увійти")
+                        Text(
+                            text = "Зареєструватися",
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 }
             }

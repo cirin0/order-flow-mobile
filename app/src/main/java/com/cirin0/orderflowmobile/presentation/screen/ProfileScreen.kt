@@ -1,4 +1,4 @@
-package com.cirin0.orderflowmobile.presentation.profile
+package com.cirin0.orderflowmobile.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

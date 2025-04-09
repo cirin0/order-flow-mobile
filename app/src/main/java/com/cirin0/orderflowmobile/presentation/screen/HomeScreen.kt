@@ -1,5 +1,6 @@
-package com.cirin0.orderflowmobile.presentation.home
+package com.cirin0.orderflowmobile.presentation.screen
 
+import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,6 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.bumptech.glide.Glide
 import com.cirin0.orderflowmobile.domain.model.Product
+import com.cirin0.orderflowmobile.presentation.screen.viewmodel.HomeViewModel
 import com.cirin0.orderflowmobile.util.Resource
 
 @Composable
@@ -96,8 +98,8 @@ fun ProductCard(
                 AndroidView(
                     factory = { context ->
                         ImageView(context).apply {
-                            layoutParams = android.view.ViewGroup.LayoutParams(
-                                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                            layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
                                 600 // Height in pixels
                             )
                         }
