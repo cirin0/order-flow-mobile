@@ -8,12 +8,7 @@ import javax.inject.Inject
 class GetProductByIdUseCase @Inject constructor(
     private val repository: ProductRepository
 ) {
-    suspend operator fun invoke(id: Int?): Resource<ProductDetails> {
-        return try {
-            val product = repository.getProductById(id)
-            Resource.Success(product.data)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unknown error")
-        }
+    suspend operator fun invoke(id: String): Resource<ProductDetails> {
+        return repository.getProductById(id)
     }
 }
