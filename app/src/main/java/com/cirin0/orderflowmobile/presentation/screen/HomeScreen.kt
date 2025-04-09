@@ -41,9 +41,9 @@ import com.cirin0.orderflowmobile.util.Resource
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = hiltViewModel(),
     navController: NavHostController
 ) {
+    val viewModel: HomeViewModel = hiltViewModel()
     val products by viewModel.products.collectAsState()
     when (products) {
         is Resource.Loading -> {
@@ -69,6 +69,7 @@ fun HomeScreen(
         }
     }
 }
+
 
 @Composable
 fun ProductCard(
@@ -146,16 +147,3 @@ fun ProductCard(
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

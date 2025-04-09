@@ -54,9 +54,11 @@ import com.cirin0.orderflowmobile.presentation.screen.viewmodel.RegisterViewMode
 @Composable
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
-    viewModel: RegisterViewModel = viewModel(),
     navController: NavHostController,
 ) {
+
+    val viewModel: RegisterViewModel = viewModel()
+    
     val state = viewModel.state.value
     val firstName = viewModel.firstName.value
     val lastName = viewModel.lastName.value

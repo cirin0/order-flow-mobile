@@ -49,8 +49,8 @@ import com.cirin0.orderflowmobile.presentation.screen.viewmodel.LoginViewModel
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
-    viewModel: LoginViewModel = hiltViewModel()
 ) {
+    val viewModel: LoginViewModel = hiltViewModel()
     val state = viewModel.state.value
     val email = viewModel.email.value
     val password = viewModel.password.value

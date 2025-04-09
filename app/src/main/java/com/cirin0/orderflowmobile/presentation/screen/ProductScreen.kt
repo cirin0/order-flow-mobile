@@ -36,11 +36,10 @@ import com.cirin0.orderflowmobile.util.Resource
 @Composable
 fun ProductScreen(
     modifier: Modifier = Modifier,
-    viewModel: ProductViewModel = hiltViewModel(),
     id: String?,
     navController: NavHostController,
 ) {
-
+    val viewModel: ProductViewModel = hiltViewModel()
     val product by viewModel.product.collectAsState()
 
     LaunchedEffect(id) {

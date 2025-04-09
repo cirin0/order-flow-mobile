@@ -1,7 +1,6 @@
 package com.cirin0.orderflowmobile.presentation.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -14,8 +13,6 @@ import com.cirin0.orderflowmobile.presentation.screen.LoginScreen
 import com.cirin0.orderflowmobile.presentation.screen.ProductScreen
 import com.cirin0.orderflowmobile.presentation.screen.ProfileScreen
 import com.cirin0.orderflowmobile.presentation.screen.RegisterScreen
-import com.cirin0.orderflowmobile.presentation.screen.viewmodel.ProductViewModel
-import com.cirin0.orderflowmobile.presentation.screen.viewmodel.RegisterViewModel
 
 object NavRoutes {
     const val HOME = "home"
@@ -64,10 +61,8 @@ fun AppNavHost(
         }
 
         composable(NavRoutes.REGISTER) {
-            val registerViewModel: RegisterViewModel = hiltViewModel()
             RegisterScreen(
                 navController = navController,
-                viewModel = registerViewModel,
                 onRegisterSuccess = {
                     navController.popBackStack()
                     navController.navigate(NavRoutes.PROFILE)
@@ -78,10 +73,8 @@ fun AppNavHost(
             route = "product/{id}",
             arguments = listOf(navArgument("id") { type = NavType.StringType }),
         ) { backStackEntry ->
-            val productViewModel: ProductViewModel = hiltViewModel()
             val id = backStackEntry.arguments?.getString("id")
             ProductScreen(
-                viewModel = productViewModel,
                 navController = navController,
                 id = id
             )
