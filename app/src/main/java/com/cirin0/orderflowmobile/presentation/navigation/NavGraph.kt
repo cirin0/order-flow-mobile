@@ -24,7 +24,6 @@ object NavRoutes {
     const val PROFILE = "profile"
     const val LOGIN = "login"
     const val REGISTER = "register"
-    const val PRODUCT = "product"
 }
 
 @Composable
@@ -39,8 +38,7 @@ fun AppNavHost(
     ) {
         composable(NavRoutes.HOME) {
             HomeScreen(
-                navController = navController,
-                viewModel = hiltViewModel(),
+                navController = navController
             )
         }
         composable(NavRoutes.FAVORITES) {
@@ -78,10 +76,10 @@ fun AppNavHost(
         }
         composable(
             route = "product/{id}",
-            arguments = listOf(navArgument("id") { type = NavType.IntType }),
+            arguments = listOf(navArgument("id") { type = NavType.StringType }),
         ) { backStackEntry ->
             val productViewModel: ProductViewModel = hiltViewModel()
-            val id = backStackEntry.arguments?.getInt("id")
+            val id = backStackEntry.arguments?.getString("id")
             ProductScreen(
                 viewModel = productViewModel,
                 navController = navController,

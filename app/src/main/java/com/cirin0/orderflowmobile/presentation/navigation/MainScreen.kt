@@ -1,6 +1,7 @@
 package com.cirin0.orderflowmobile.presentation.navigation
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,6 +26,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -85,6 +87,14 @@ fun MainScreen(
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var isSearchActive by rememberSaveable { mutableStateOf(false) }
 
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+
+    LaunchedEffect(currentDestination) {
+        if (isSearchActive)
+            isSearchActive = false
+    }
+
     Scaffold(
         topBar = {
             DockedSearchBar(
@@ -102,17 +112,13 @@ fun MainScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    // давати відступів згори
                     .padding(top = 40.dp)
-                    .padding(16.dp),
+                    .padding(8.dp),
                 shape = RoundedCornerShape(16.dp),
                 content = {
-                    // Sample search results - replace with actual search logic
                     if (searchQuery.isNotEmpty()) {
-                        // Mock items that would come from your data source
                         val items = listOf("Товар 1", "Товар 2", "Товар 3")
                             .filter { it.contains(searchQuery, ignoreCase = true) }
-
                         items.forEach { item ->
                             ListItem(
                                 headlineContent = { Text(item) },
@@ -164,7 +170,7 @@ fun MainScreen(
                                 }
                             },
                             label = { Text(item.title) },
-                            alwaysShowLabel = false,
+                            alwaysShowLabel = true,
                             selected = selected,
                             onClick = {
                                 navController.navigate(item.route) {
@@ -186,6 +192,12 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .clickable(
+                    enabled = isSearchActive,
+                    onClick = { isSearchActive = false },
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                )
         ) {
             AppNavHost(
                 navController = navController,

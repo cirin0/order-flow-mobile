@@ -1,11 +1,16 @@
 package com.cirin0.orderflowmobile.di
 
 import com.cirin0.orderflowmobile.data.remote.AuthApi
+import com.cirin0.orderflowmobile.data.remote.CategoryApi
 import com.cirin0.orderflowmobile.data.remote.ProductApi
 import com.cirin0.orderflowmobile.data.repository.AuthRepositoryImpl
+import com.cirin0.orderflowmobile.data.repository.CategoryRepositoryImpl
 import com.cirin0.orderflowmobile.data.repository.ProductRepositoryImpl
 import com.cirin0.orderflowmobile.domain.repository.AuthRepository
+import com.cirin0.orderflowmobile.domain.repository.CategoryRepository
 import com.cirin0.orderflowmobile.domain.repository.ProductRepository
+import com.cirin0.orderflowmobile.domain.usecase.GetCategoriesUseCase
+import com.cirin0.orderflowmobile.domain.usecase.GetCategoryByIdUseCase
 import com.cirin0.orderflowmobile.domain.usecase.GetProductByIdUseCase
 import com.cirin0.orderflowmobile.domain.usecase.GetProductsUseCase
 import com.cirin0.orderflowmobile.domain.usecase.LoginUseCase
@@ -95,4 +100,29 @@ object AppModule {
     fun provideGetProductByIdUseCase(repository: ProductRepository): GetProductByIdUseCase {
         return GetProductByIdUseCase(repository)
     }
+
+    @Provides
+    @Singleton
+    fun provideCategoryApi(retrofit: Retrofit): CategoryApi {
+        return retrofit.create(CategoryApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCategoryRepository(api: CategoryApi): CategoryRepository {
+        return CategoryRepositoryImpl(api)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetCategoriesUseCase(repository: CategoryRepository): GetCategoriesUseCase {
+        return GetCategoriesUseCase(repository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetCategoryByIdUseCase(repository: CategoryRepository): GetCategoryByIdUseCase {
+        return GetCategoryByIdUseCase(repository)
+    }
+
 } 
