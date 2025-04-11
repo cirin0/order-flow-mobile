@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.cirin0.orderflowmobile.presentation.screen.CartScreen
+import com.cirin0.orderflowmobile.presentation.screen.CategoryScreen
 import com.cirin0.orderflowmobile.presentation.screen.FavoritesScreen
 import com.cirin0.orderflowmobile.presentation.screen.HomeScreen
 import com.cirin0.orderflowmobile.presentation.screen.LoginScreen
@@ -77,6 +78,16 @@ fun AppNavHost(
             ProductScreen(
                 navController = navController,
                 id = id
+            )
+        }
+        composable(
+            route = "category/{name}",
+            arguments = listOf(navArgument("name") { type = NavType.StringType }),
+        ) { backStackEntry ->
+            val name = backStackEntry.arguments?.getString("name")
+            CategoryScreen(
+                navController = navController,
+                name = name
             )
         }
     }

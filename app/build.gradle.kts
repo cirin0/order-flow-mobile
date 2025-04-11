@@ -80,4 +80,5 @@ dependencies {
     implementation(libs.okhttp)
 
     implementation(libs.kotlinx.serialization)
+    implementation(libs.androidx.swiperefreshlayout)
 }

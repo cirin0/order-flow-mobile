@@ -17,20 +17,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             OrderFlowMobileTheme {
-//                Surface(
-//                    modifier = Modifier.fillMaxSize(),
-//                    color = MaterialTheme.colorScheme.background
-//                ) {
-//                    val mainViewModel: MainViewModel = hiltViewModel()
-//                    MainScreen(
-//                        isAuthenticated = mainViewModel.isAuthenticated.value,
-//                        mainViewModel = mainViewModel,
-//                    )
-//                }
                 val mainViewModel: MainViewModel = hiltViewModel()
                 MainScreen(
                     isAuthenticated = mainViewModel.isAuthenticated.value,
-                    mainViewModel = mainViewModel,
                 )
             }
         }

@@ -33,4 +33,8 @@ class ProductViewModel @Inject constructor(
             _product.value = getProductByIdUseCase(id)
         }
     }
+
+    fun refreshData(id: String) {
+        getProduct(id)
+    }
 }
