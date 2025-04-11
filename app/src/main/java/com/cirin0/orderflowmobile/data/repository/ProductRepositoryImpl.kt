@@ -58,4 +58,17 @@ class ProductRepositoryImpl @Inject constructor(
             Resource.Error(e.message ?: "An error occurred")
         }
     }
+
+    override suspend fun getProductsByCategoryName(categoryName: String): Resource<List<Product>> {
+        return try {
+            val response = api.getProductsByCategoryName(categoryName)
+            if (response.isSuccessful) {
+                Resource.Success(response.body() ?: emptyList())
+            } else {
+                Resource.Error("Error: ${response.code()}: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "An error occurred")
+        }
+    }
 }

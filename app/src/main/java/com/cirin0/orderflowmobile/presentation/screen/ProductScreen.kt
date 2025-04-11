@@ -1,7 +1,9 @@
-package com.cirin0.orderflowmobile.presentation.product
+package com.cirin0.orderflowmobile.presentation.screen
 
+import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,46 +32,66 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.bumptech.glide.Glide
 import com.cirin0.orderflowmobile.domain.model.ProductDetails
+import com.cirin0.orderflowmobile.presentation.screen.viewmodel.ProductViewModel
+import com.cirin0.orderflowmobile.presentation.ui.component.PullToRefreshWrapper
+import com.cirin0.orderflowmobile.presentation.ui.component.useRefreshHandler
 import com.cirin0.orderflowmobile.util.Resource
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductScreen(
     modifier: Modifier = Modifier,
-    viewModel: ProductViewModel = hiltViewModel(),
     id: String?,
     navController: NavHostController,
 ) {
-
+    val viewModel: ProductViewModel = hiltViewModel()
     val product by viewModel.product.collectAsState()
 
-    LaunchedEffect(id) {
-        viewModel.getProduct(id ?: "")
+    val refreshHandler = useRefreshHandler()
+
+    LaunchedEffect(key1 = id) {
+        id?.let { productId ->
+            viewModel.getProduct(productId)
+        }
+
+        if (refreshHandler.isRefreshing &&
+            product !is Resource.Loading
+        ) {
+            refreshHandler.resetRefreshState()
+        }
     }
 
-    when (product) {
-        is Resource.Loading -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(50.dp),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
+    PullToRefreshWrapper(
+        modifier = Modifier.fillMaxSize(),
+        onRefresh = { viewModel.refreshData(id = id.toString()) },
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            when (product) {
+                is Resource.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(50.dp),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
 
-        is Resource.Success -> {
-            val data = product.data
-            if (data != null) {
-                ProductDetails(product = data)
-            } else {
-                Text("Товар не знайдено", color = MaterialTheme.colorScheme.error)
-            }
-        }
+                is Resource.Success -> {
+                    val data = product.data
+                    if (data != null) {
+                        ProductDetails(product = data)
+                    } else {
+                        Text("Товар не знайдено", color = MaterialTheme.colorScheme.error)
+                    }
+                }
 
-        is Resource.Error -> {
-            Text(product.message ?: "Unknown error")
+                is Resource.Error -> {
+                    Text(product.message ?: "Unknown error")
+                }
+            }
         }
     }
 }
@@ -89,8 +112,8 @@ fun ProductDetails(product: ProductDetails) {
             AndroidView(
                 factory = { context ->
                     ImageView(context).apply {
-                        layoutParams = android.view.ViewGroup.LayoutParams(
-                            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
                             600 // Height in pixels
                         )
                     }

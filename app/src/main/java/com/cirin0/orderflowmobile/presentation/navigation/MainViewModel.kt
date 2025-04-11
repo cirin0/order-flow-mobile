@@ -4,6 +4,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 
@@ -14,6 +16,9 @@ class MainViewModel @Inject constructor(
 
     private val _isAuthenticated = mutableStateOf(false)
     val isAuthenticated: State<Boolean> = _isAuthenticated
+
+    private val _searchItem = MutableStateFlow<Any?>(null) // Replace Any? with your actual type
+    val searchItem: StateFlow<*> = _searchItem
 
     // Example method to update authentication state
     fun updateAuthState(isAuthenticated: Boolean) {

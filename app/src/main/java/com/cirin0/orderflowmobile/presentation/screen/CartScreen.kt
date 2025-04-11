@@ -1,4 +1,4 @@
-package com.cirin0.orderflowmobile.presentation.favorites
+package com.cirin0.orderflowmobile.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun FavoritesScreen(modifier: Modifier = Modifier) {
+fun CartScreen(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -23,7 +23,7 @@ fun FavoritesScreen(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Вибране",
+            text = "Кошик",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary

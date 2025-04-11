@@ -1,21 +1,19 @@
 package com.cirin0.orderflowmobile.presentation.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.cirin0.orderflowmobile.presentation.cart.CartScreen
-import com.cirin0.orderflowmobile.presentation.favorites.FavoritesScreen
-import com.cirin0.orderflowmobile.presentation.home.HomeScreen
-import com.cirin0.orderflowmobile.presentation.login.LoginScreen
-import com.cirin0.orderflowmobile.presentation.product.ProductScreen
-import com.cirin0.orderflowmobile.presentation.product.ProductViewModel
-import com.cirin0.orderflowmobile.presentation.profile.ProfileScreen
-import com.cirin0.orderflowmobile.presentation.register.RegisterScreen
-import com.cirin0.orderflowmobile.presentation.register.RegisterViewModel
+import com.cirin0.orderflowmobile.presentation.screen.CartScreen
+import com.cirin0.orderflowmobile.presentation.screen.CategoryScreen
+import com.cirin0.orderflowmobile.presentation.screen.FavoritesScreen
+import com.cirin0.orderflowmobile.presentation.screen.HomeScreen
+import com.cirin0.orderflowmobile.presentation.screen.LoginScreen
+import com.cirin0.orderflowmobile.presentation.screen.ProductScreen
+import com.cirin0.orderflowmobile.presentation.screen.ProfileScreen
+import com.cirin0.orderflowmobile.presentation.screen.RegisterScreen
 
 object NavRoutes {
     const val HOME = "home"
@@ -64,10 +62,8 @@ fun AppNavHost(
         }
 
         composable(NavRoutes.REGISTER) {
-            val registerViewModel: RegisterViewModel = hiltViewModel()
             RegisterScreen(
                 navController = navController,
-                viewModel = registerViewModel,
                 onRegisterSuccess = {
                     navController.popBackStack()
                     navController.navigate(NavRoutes.PROFILE)
@@ -78,12 +74,20 @@ fun AppNavHost(
             route = "product/{id}",
             arguments = listOf(navArgument("id") { type = NavType.StringType }),
         ) { backStackEntry ->
-            val productViewModel: ProductViewModel = hiltViewModel()
             val id = backStackEntry.arguments?.getString("id")
             ProductScreen(
-                viewModel = productViewModel,
                 navController = navController,
                 id = id
+            )
+        }
+        composable(
+            route = "category/{name}",
+            arguments = listOf(navArgument("name") { type = NavType.StringType }),
+        ) { backStackEntry ->
+            val name = backStackEntry.arguments?.getString("name")
+            CategoryScreen(
+                navController = navController,
+                name = name
             )
         }
     }
