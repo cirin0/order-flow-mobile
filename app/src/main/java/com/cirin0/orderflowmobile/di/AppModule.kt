@@ -11,6 +11,7 @@ import com.cirin0.orderflowmobile.domain.repository.CategoryRepository
 import com.cirin0.orderflowmobile.domain.repository.ProductRepository
 import com.cirin0.orderflowmobile.domain.usecase.GetCategoriesUseCase
 import com.cirin0.orderflowmobile.domain.usecase.GetCategoryByIdUseCase
+import com.cirin0.orderflowmobile.domain.usecase.GetProductByCategoryNameUseCase
 import com.cirin0.orderflowmobile.domain.usecase.GetProductByIdUseCase
 import com.cirin0.orderflowmobile.domain.usecase.GetProductsUseCase
 import com.cirin0.orderflowmobile.domain.usecase.LoginUseCase
@@ -125,4 +126,10 @@ object AppModule {
         return GetCategoryByIdUseCase(repository)
     }
 
-} 
+    @Provides
+    @Singleton
+    fun provideGetProductByCategoryNameUseCase(repository: ProductRepository): GetProductByCategoryNameUseCase {
+        return GetProductByCategoryNameUseCase(repository)
+    }
+
+}

@@ -1,4 +1,4 @@
-package com.cirin0.orderflowmobile.presentation.product
+package com.cirin0.orderflowmobile.presentation.screen.viewmodel
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -32,5 +32,9 @@ class ProductViewModel @Inject constructor(
             _product.value = Resource.Loading()
             _product.value = getProductByIdUseCase(id)
         }
+    }
+
+    fun refreshData(id: String) {
+        getProduct(id)
     }
 }

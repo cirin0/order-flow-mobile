@@ -13,20 +13,21 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.ShoppingCart
-import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -53,7 +55,6 @@ data class BottomNavItem(
 fun MainScreen(
     isAuthenticated: Boolean = false,
     navController: NavHostController = rememberNavController(),
-    mainViewModel: MainViewModel? = null,
 ) {
     val bottomNavItems = remember {
         listOf(
@@ -66,8 +67,18 @@ fun MainScreen(
             BottomNavItem(
                 route = NavRoutes.FAVORITES,
                 title = "Улюблене",
-                selectedIcon = { Icon(Icons.Filled.Favorite, contentDescription = "Улюблене") },
-                unselectedIcon = { Icon(Icons.Outlined.Favorite, contentDescription = "Улюблене") }
+                selectedIcon = {
+                    Icon(
+                        Icons.Filled.Favorite,
+                        contentDescription = "Улюблене"
+                    )
+                },
+                unselectedIcon = {
+                    Icon(
+                        Icons.Outlined.FavoriteBorder,
+                        contentDescription = "Улюблене"
+                    )
+                }
             ),
             BottomNavItem(
                 route = NavRoutes.CART,
@@ -84,76 +95,93 @@ fun MainScreen(
         )
     }
 
+    val viewModel: MainViewModel = hiltViewModel()
+
+    val searchItem by viewModel.searchItem.collectAsState()
+
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var isSearchActive by rememberSaveable { mutableStateOf(false) }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val currentRoute = currentDestination?.route
 
     LaunchedEffect(currentDestination) {
         if (isSearchActive)
             isSearchActive = false
     }
 
+    val routesWithoutSearchBar = listOf(
+        NavRoutes.PROFILE,
+        NavRoutes.LOGIN,
+        NavRoutes.REGISTER,
+        NavRoutes.CART
+    )
+
+    val shouldShowSearchBar = currentRoute !in routesWithoutSearchBar
+
     Scaffold(
         topBar = {
-            DockedSearchBar(
-                query = searchQuery,
-                onQueryChange = { searchQuery = it },
-                onSearch = { isSearchActive = false },
-                active = isSearchActive,
-                onActiveChange = { isSearchActive = it },
-                placeholder = { Text("Пошук товарів...") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Пошук"
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 40.dp)
-                    .padding(8.dp),
-                shape = RoundedCornerShape(16.dp),
-                content = {
-                    if (searchQuery.isNotEmpty()) {
-                        val items = listOf("Товар 1", "Товар 2", "Товар 3")
-                            .filter { it.contains(searchQuery, ignoreCase = true) }
-                        items.forEach { item ->
-                            ListItem(
-                                headlineContent = { Text(item) },
-                                leadingContent = {
-                                    Icon(
-                                        imageVector = Icons.Filled.Search,
-                                        contentDescription = null
-                                    )
-                                },
-                                modifier = Modifier.clickable {
-                                    searchQuery = item
-                                    isSearchActive = false
-                                }
-                            )
+            if (shouldShowSearchBar) {
+                SearchBar(
+                    query = searchQuery,
+                    onQueryChange = { searchQuery = it },
+                    onSearch = { isSearchActive = false },
+                    active = isSearchActive,
+                    onActiveChange = { isSearchActive = it },
+                    placeholder = { Text("Пошук товарів...") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Пошук"
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    content = {
+                        if (searchQuery.isNotEmpty()) {
+                            val items = listOf("Товар 1", "Товар 2", "Товар 3")
+                                .filter { it.contains(searchQuery, ignoreCase = true) }
+                            items.forEach { item ->
+                                ListItem(
+                                    headlineContent = { Text(item) },
+                                    leadingContent = {
+                                        Icon(
+                                            imageVector = Icons.Filled.Search,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    modifier = Modifier.clickable {
+                                        searchQuery = item
+                                        isSearchActive = false
+                                    }
+                                )
+                            }
                         }
                     }
-                }
-            )
+                )
+            }
         },
         bottomBar = {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
 
-            val showBottomNav = when (currentDestination?.route) {
-                null -> false
-                in listOf(
+            val showBottomNav = when {
+                currentDestination?.route == null -> false
+                currentDestination.route in listOf(
                     NavRoutes.HOME,
                     NavRoutes.FAVORITES,
                     NavRoutes.CART,
                     NavRoutes.PROFILE,
                     NavRoutes.LOGIN,
-                    NavRoutes.REGISTER,
+                    NavRoutes.REGISTER
                 ) -> true
 
-                else -> currentDestination.route?.startsWith("product/") == true
+                currentDestination.route?.startsWith("${NavRoutes.CATEGORY}/") == true -> true
+                currentDestination.route?.startsWith("${NavRoutes.PRODUCT}/") == true -> true
+                else -> false
             }
 
             if (showBottomNav) {
@@ -173,13 +201,25 @@ fun MainScreen(
                             alwaysShowLabel = true,
                             selected = selected,
                             onClick = {
-                                navController.navigate(item.route) {
-                                    // Clear the back stack to avoid navigating back to the previous screen
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
+                                if (item.route == NavRoutes.HOME &&
+                                    (currentDestination?.route?.startsWith("${NavRoutes.PRODUCT}/") == true) ||
+                                    (currentDestination?.route?.startsWith("${NavRoutes.CATEGORY}/") == true)
+                                ) {
+                                    navController.navigate(NavRoutes.HOME) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = false
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = false
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
+                                } else {
+                                    navController.navigate(item.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
                                 }
                             }
                         )
