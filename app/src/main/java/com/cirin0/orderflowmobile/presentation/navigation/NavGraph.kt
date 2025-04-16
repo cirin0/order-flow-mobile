@@ -22,6 +22,8 @@ object NavRoutes {
     const val PROFILE = "profile"
     const val LOGIN = "login"
     const val REGISTER = "register"
+    const val PRODUCT = "product"
+    const val CATEGORY = "category"
 }
 
 @Composable
@@ -57,21 +59,26 @@ fun AppNavHost(
                 onLoginSuccess = {
                     navController.popBackStack()
                     navController.navigate(NavRoutes.PROFILE)
-                }
+                },
+                onNavigateToRegister = {
+                    navController.navigate(NavRoutes.REGISTER)
+                },
             )
         }
 
         composable(NavRoutes.REGISTER) {
             RegisterScreen(
-                navController = navController,
                 onRegisterSuccess = {
                     navController.popBackStack()
-                    navController.navigate(NavRoutes.PROFILE)
-                }
+                    navController.navigate(NavRoutes.LOGIN)
+                },
+                onNavigateToLogin = {
+                    navController.navigate(NavRoutes.LOGIN)
+                },
             )
         }
         composable(
-            route = "product/{id}",
+            route = "${NavRoutes.PRODUCT}/{id}",
             arguments = listOf(navArgument("id") { type = NavType.StringType }),
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id")
@@ -81,7 +88,7 @@ fun AppNavHost(
             )
         }
         composable(
-            route = "category/{name}",
+            route = "${NavRoutes.CATEGORY}/{name}",
             arguments = listOf(navArgument("name") { type = NavType.StringType }),
         ) { backStackEntry ->
             val name = backStackEntry.arguments?.getString("name")
