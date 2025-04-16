@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">OrderFlow</string>
+    <string name="login_title">Вхід</string>
+    <string name="register_title">Реєстрація</string>
     <string name="enter_email">Введіть email</string>
     <string name="enter_password">Введіть пароль</string>
     <string name="enter_first_name">Введіть ім\'я</string>

@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             OrderFlowMobileTheme {
-                val mainViewModel: MainViewModel = hiltViewModel()
+                val mainViewModel = hiltViewModel<MainViewModel>()
                 MainScreen(
                     isAuthenticated = mainViewModel.isAuthenticated.value,
                 )
