@@ -1,7 +1,5 @@
 package com.cirin0.orderflowmobile.presentation.screen
 
-import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -10,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,16 +32,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.bumptech.glide.Glide
 import com.cirin0.orderflowmobile.domain.model.Category
 import com.cirin0.orderflowmobile.domain.model.Product
 import com.cirin0.orderflowmobile.presentation.screen.viewmodel.HomeViewModel
 import com.cirin0.orderflowmobile.presentation.ui.component.PullToRefreshWrapper
 import com.cirin0.orderflowmobile.presentation.ui.component.useRefreshHandler
 import com.cirin0.orderflowmobile.util.Resource
+import com.skydoves.landscapist.glide.GlideImage
 
 @Composable
 fun HomeScreen(
@@ -85,7 +83,7 @@ fun HomeScreen(
                         LazyRow(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp)
+                                .padding(vertical = 8.dp, horizontal = 5.dp),
                         ) {
                             items(data.size) { index ->
                                 val categoryItem = data[index]
@@ -165,21 +163,21 @@ fun ProductCard(
                         MaterialTheme.colorScheme.primaryContainer
                     )
             ) {
-                AndroidView(
-                    factory = { context ->
-                        ImageView(context).apply {
-                            layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                600 // Height in pixels
-                            )
+                GlideImage(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp),
+                    imageModel = { product.imageUrl },
+                    loading = {
+                        Box(contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp))
                         }
                     },
-                    update = { imageView ->
-                        Glide.with(imageView)
-                            .load(product.imageUrl)
-                            .centerCrop()
-                            .into(imageView)
-                    }
+                    failure = {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(text = "Failed to load image")
+                        }
+                    },
                 )
             }
             Text(

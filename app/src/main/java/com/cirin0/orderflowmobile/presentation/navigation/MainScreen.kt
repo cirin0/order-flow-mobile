@@ -6,8 +6,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -17,9 +21,12 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -33,7 +40,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -41,6 +50,10 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.cirin0.orderflowmobile.domain.model.Category
+import com.cirin0.orderflowmobile.domain.model.Product
+import com.skydoves.landscapist.glide.GlideImage
+import kotlinx.coroutines.delay
 
 
 data class BottomNavItem(
@@ -55,60 +68,45 @@ data class BottomNavItem(
 fun MainScreen(
     isAuthenticated: Boolean = false,
     navController: NavHostController = rememberNavController(),
+    viewModel: MainViewModel = hiltViewModel()
 ) {
-    val bottomNavItems = remember {
-        listOf(
-            BottomNavItem(
-                route = NavRoutes.HOME,
-                title = "Головна",
-                selectedIcon = { Icon(Icons.Filled.Home, contentDescription = "Головна") },
-                unselectedIcon = { Icon(Icons.Outlined.Home, contentDescription = "Головна") }
-            ),
-            BottomNavItem(
-                route = NavRoutes.FAVORITES,
-                title = "Улюблене",
-                selectedIcon = {
-                    Icon(
-                        Icons.Filled.Favorite,
-                        contentDescription = "Улюблене"
-                    )
-                },
-                unselectedIcon = {
-                    Icon(
-                        Icons.Outlined.FavoriteBorder,
-                        contentDescription = "Улюблене"
-                    )
-                }
-            ),
-            BottomNavItem(
-                route = NavRoutes.CART,
-                title = "Кошик",
-                selectedIcon = { Icon(Icons.Filled.ShoppingCart, contentDescription = "Кошик") },
-                unselectedIcon = { Icon(Icons.Outlined.ShoppingCart, contentDescription = "Кошик") }
-            ),
-            BottomNavItem(
-                route = NavRoutes.PROFILE,
-                title = "Профіль",
-                selectedIcon = { Icon(Icons.Filled.Person, contentDescription = "Профіль") },
-                unselectedIcon = { Icon(Icons.Outlined.Person, contentDescription = "Профіль") }
-            )
-        )
-    }
-
-    val viewModel: MainViewModel = hiltViewModel()
-
-    val searchItem by viewModel.searchItem.collectAsState()
+    val searchState by viewModel.searchState.collectAsState()
 
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var isSearchActive by rememberSaveable { mutableStateOf(false) }
 
+    val bottomNavItems = createBottomNavItems()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
     val currentRoute = currentDestination?.route
 
     LaunchedEffect(currentDestination) {
-        if (isSearchActive)
+        if (isSearchActive) {
             isSearchActive = false
+            searchQuery = ""
+            viewModel.clearSearchResults()
+        }
+    }
+
+    LaunchedEffect(isSearchActive) {
+        if (!isSearchActive && searchState.searchResult != null) {
+            searchQuery = ""
+            viewModel.clearSearchResults()
+        }
+    }
+
+    LaunchedEffect(searchQuery, isSearchActive) {
+        if (isSearchActive && searchQuery.isNotEmpty()) {
+            delay(500)
+            viewModel.search(searchQuery)
+        }
+    }
+
+    val navigateFromSearch: (String) -> Unit = { route ->
+        isSearchActive = false
+        searchQuery = ""
+        viewModel.clearSearchResults()
+        navController.navigate(route)
     }
 
     val routesWithoutSearchBar = listOf(
@@ -117,8 +115,23 @@ fun MainScreen(
         NavRoutes.REGISTER,
         NavRoutes.CART
     )
-
     val shouldShowSearchBar = currentRoute !in routesWithoutSearchBar
+
+    val showBottomNav = when {
+        currentDestination?.route == null -> false
+        currentDestination.route in listOf(
+            NavRoutes.HOME,
+            NavRoutes.FAVORITES,
+            NavRoutes.CART,
+            NavRoutes.PROFILE,
+            NavRoutes.LOGIN,
+            NavRoutes.REGISTER
+        ) -> true
+
+        currentDestination.route?.startsWith("${NavRoutes.CATEGORY}/") == true -> true
+        currentDestination.route?.startsWith("${NavRoutes.PRODUCT}/") == true -> true
+        else -> false
+    }
 
     Scaffold(
         topBar = {
@@ -136,28 +149,103 @@ fun MainScreen(
                             contentDescription = "Пошук"
                         )
                     },
+                    trailingIcon = {
+                        if (isSearchActive) {
+                            IconButton(onClick = {
+                                isSearchActive = false
+                                searchQuery = ""
+                                viewModel.clearSearchResults()
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = "Закрити"
+                                )
+                            }
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
                     shape = RoundedCornerShape(16.dp),
                     content = {
-                        if (searchQuery.isNotEmpty()) {
-                            val items = listOf("Товар 1", "Товар 2", "Товар 3")
-                                .filter { it.contains(searchQuery, ignoreCase = true) }
-                            items.forEach { item ->
-                                ListItem(
-                                    headlineContent = { Text(item) },
-                                    leadingContent = {
-                                        Icon(
-                                            imageVector = Icons.Filled.Search,
-                                            contentDescription = null
-                                        )
-                                    },
-                                    modifier = Modifier.clickable {
-                                        searchQuery = item
-                                        isSearchActive = false
-                                    }
+                        when {
+                            searchState.isLoading -> {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+
+                            searchState.error.isNotEmpty() -> {
+                                Text(
+                                    text = searchState.error,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    color = MaterialTheme.colorScheme.error,
+                                    textAlign = TextAlign.Center,
                                 )
+                            }
+
+                            searchState.searchResult != null -> {
+                                val products = searchState.searchResult?.products.orEmpty()
+                                val categories = searchState.searchResult?.categories.orEmpty()
+
+                                if (products.isEmpty() && categories.isEmpty()) {
+                                    Text(
+                                        text = "Нічого не знайдено",
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 24.dp),
+                                        textAlign = TextAlign.Center
+                                    )
+                                } else {
+                                    LazyColumn {
+                                        if (categories.isNotEmpty()) {
+                                            item {
+                                                Text(
+                                                    text = "Категорії",
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(16.dp),
+                                                    style = MaterialTheme.typography.titleMedium
+                                                )
+                                            }
+                                            items(categories) { category ->
+                                                SearchCategoryItem(
+                                                    category = category,
+                                                    onClick = {
+                                                        navigateFromSearch("${NavRoutes.CATEGORY}/${category.name}")
+                                                    }
+                                                )
+                                            }
+                                        }
+
+                                        if (products.isNotEmpty()) {
+                                            item {
+                                                Text(
+                                                    text = "Товари",
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(16.dp),
+                                                    style = MaterialTheme.typography.titleMedium
+                                                )
+                                            }
+                                            items(products) { product ->
+                                                SearchProductItem(
+                                                    product = product,
+                                                    onClick = {
+                                                        navigateFromSearch("${NavRoutes.PRODUCT}/${product.id}")
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -165,25 +253,6 @@ fun MainScreen(
             }
         },
         bottomBar = {
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentDestination = navBackStackEntry?.destination
-
-            val showBottomNav = when {
-                currentDestination?.route == null -> false
-                currentDestination.route in listOf(
-                    NavRoutes.HOME,
-                    NavRoutes.FAVORITES,
-                    NavRoutes.CART,
-                    NavRoutes.PROFILE,
-                    NavRoutes.LOGIN,
-                    NavRoutes.REGISTER
-                ) -> true
-
-                currentDestination.route?.startsWith("${NavRoutes.CATEGORY}/") == true -> true
-                currentDestination.route?.startsWith("${NavRoutes.PRODUCT}/") == true -> true
-                else -> false
-            }
-
             if (showBottomNav) {
                 NavigationBar {
                     bottomNavItems.forEach { item ->
@@ -201,25 +270,16 @@ fun MainScreen(
                             alwaysShowLabel = true,
                             selected = selected,
                             onClick = {
-                                if (item.route == NavRoutes.HOME &&
-                                    (currentDestination?.route?.startsWith("${NavRoutes.PRODUCT}/") == true) ||
-                                    (currentDestination?.route?.startsWith("${NavRoutes.CATEGORY}/") == true)
-                                ) {
-                                    navController.navigate(NavRoutes.HOME) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = false
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = false
+                                val isResetNeeded = item.route == NavRoutes.HOME &&
+                                    (currentDestination?.route?.startsWith("${NavRoutes.PRODUCT}/") == true ||
+                                        currentDestination?.route?.startsWith("${NavRoutes.CATEGORY}/") == true)
+
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = !isResetNeeded
                                     }
-                                } else {
-                                    navController.navigate(item.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
+                                    launchSingleTop = true
+                                    restoreState = !isResetNeeded
                                 }
                             }
                         )
@@ -246,3 +306,87 @@ fun MainScreen(
         }
     }
 }
+
+@Composable
+private fun createBottomNavItems() = remember {
+    listOf(
+        BottomNavItem(
+            route = NavRoutes.HOME,
+            title = "Головна",
+            selectedIcon = { Icon(Icons.Filled.Home, contentDescription = "Головна") },
+            unselectedIcon = { Icon(Icons.Outlined.Home, contentDescription = "Головна") }
+        ),
+        BottomNavItem(
+            route = NavRoutes.FAVORITES,
+            title = "Улюблене",
+            selectedIcon = { Icon(Icons.Filled.Favorite, contentDescription = "Улюблене") },
+            unselectedIcon = {
+                Icon(
+                    Icons.Outlined.FavoriteBorder,
+                    contentDescription = "Улюблене"
+                )
+            }
+        ),
+        BottomNavItem(
+            route = NavRoutes.CART,
+            title = "Кошик",
+            selectedIcon = { Icon(Icons.Filled.ShoppingCart, contentDescription = "Кошик") },
+            unselectedIcon = { Icon(Icons.Outlined.ShoppingCart, contentDescription = "Кошик") }
+        ),
+        BottomNavItem(
+            route = NavRoutes.PROFILE,
+            title = "Профіль",
+            selectedIcon = { Icon(Icons.Filled.Person, contentDescription = "Профіль") },
+            unselectedIcon = { Icon(Icons.Outlined.Person, contentDescription = "Профіль") }
+        )
+    )
+}
+
+@Composable
+fun SearchCategoryItem(
+    category: Category,
+    onClick: () -> Unit
+) {
+    ListItem(
+        headlineContent = { Text(category.name) },
+        leadingContent = {
+            Icon(
+                imageVector = Icons.Filled.Search,
+                contentDescription = null
+            )
+        },
+        modifier = Modifier
+            .clickable(onClick = onClick)
+
+    )
+}
+
+@Composable
+fun SearchProductItem(
+    product: Product,
+    onClick: () -> Unit
+) {
+    ListItem(
+        headlineContent = { Text(product.name) },
+        supportingContent = { Text("${product.price} грн") },
+        leadingContent = {
+            GlideImage(
+                imageModel = { product.imageUrl },
+                modifier = Modifier.size(40.dp),
+                loading = {
+                    Box(contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                    }
+                },
+                failure = {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = null
+                    )
+                }
+            )
+        },
+        modifier = Modifier.clickable(onClick = onClick)
+    )
+}
+
