@@ -3,12 +3,15 @@ package com.cirin0.orderflowmobile.di
 import com.cirin0.orderflowmobile.data.remote.AuthApi
 import com.cirin0.orderflowmobile.data.remote.CategoryApi
 import com.cirin0.orderflowmobile.data.remote.ProductApi
+import com.cirin0.orderflowmobile.data.remote.SearchApi
 import com.cirin0.orderflowmobile.data.repository.AuthRepositoryImpl
 import com.cirin0.orderflowmobile.data.repository.CategoryRepositoryImpl
 import com.cirin0.orderflowmobile.data.repository.ProductRepositoryImpl
+import com.cirin0.orderflowmobile.data.repository.SearchRepositoryImpl
 import com.cirin0.orderflowmobile.domain.repository.AuthRepository
 import com.cirin0.orderflowmobile.domain.repository.CategoryRepository
 import com.cirin0.orderflowmobile.domain.repository.ProductRepository
+import com.cirin0.orderflowmobile.domain.repository.SearchRepository
 import com.cirin0.orderflowmobile.domain.usecase.GetCategoriesUseCase
 import com.cirin0.orderflowmobile.domain.usecase.GetCategoryByIdUseCase
 import com.cirin0.orderflowmobile.domain.usecase.GetProductByCategoryNameUseCase
@@ -130,6 +133,18 @@ object AppModule {
     @Singleton
     fun provideGetProductByCategoryNameUseCase(repository: ProductRepository): GetProductByCategoryNameUseCase {
         return GetProductByCategoryNameUseCase(repository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideServiceApi(retrofit: Retrofit): SearchApi {
+        return retrofit.create(SearchApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSearchRepository(api: SearchApi): SearchRepository {
+        return SearchRepositoryImpl(api)
     }
 
 }

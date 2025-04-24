@@ -74,6 +74,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.glide)
+    implementation(libs.landscapist.glide)
 
     implementation(libs.retrofit)
     implementation(libs.retrofit.converterJson)
