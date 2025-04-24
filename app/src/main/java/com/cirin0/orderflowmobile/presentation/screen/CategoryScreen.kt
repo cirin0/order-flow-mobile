@@ -34,6 +34,7 @@ fun CategoryScreen(
     val viewModel: CategoryViewModel = hiltViewModel()
     val category by viewModel.category.collectAsState()
     val refreshHandler = useRefreshHandler()
+    val favoriteStatus by viewModel.productFavoriteStatus.collectAsState()
 
     LaunchedEffect(key1 = name) {
         name?.let { categoryName ->
@@ -70,6 +71,8 @@ fun CategoryScreen(
                     if (data != null) {
                         CategoryList(
                             products = data,
+                            favoriteStatus = favoriteStatus,
+                            onToggleFavorite = { product -> viewModel.toggleFavorite(product) },
                             onProductClick = { productId ->
                                 navController.navigate("product/$productId")
                             }
@@ -91,6 +94,8 @@ fun CategoryScreen(
 @Composable
 fun CategoryList(
     products: List<Product>,
+    favoriteStatus: Map<Int, Boolean>,
+    onToggleFavorite: (Product) -> Unit,
     onProductClick: (String) -> Unit
 ) {
     LazyColumn(
@@ -99,7 +104,11 @@ fun CategoryList(
     ) {
         items(products.size) { index ->
             val product = products[index]
-            ProductCard(product = product) {
+            ProductCard(
+                product = product,
+                isFavorite = favoriteStatus[product.id] ?: false,
+                onFavoriteClick = { onToggleFavorite(product) },
+            ) {
                 onProductClick(product.id.toString())
             }
         }

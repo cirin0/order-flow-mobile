@@ -1,7 +1,5 @@
 package com.cirin0.orderflowmobile.presentation.screen
 
-import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -10,12 +8,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -33,16 +33,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.bumptech.glide.Glide
 import com.cirin0.orderflowmobile.domain.model.Category
 import com.cirin0.orderflowmobile.domain.model.Product
 import com.cirin0.orderflowmobile.presentation.screen.viewmodel.HomeViewModel
 import com.cirin0.orderflowmobile.presentation.ui.component.PullToRefreshWrapper
 import com.cirin0.orderflowmobile.presentation.ui.component.useRefreshHandler
 import com.cirin0.orderflowmobile.util.Resource
+import com.skydoves.landscapist.glide.GlideImage
 
 @Composable
 fun HomeScreen(
@@ -52,6 +51,7 @@ fun HomeScreen(
     val products by viewModel.products.collectAsState()
     val category by viewModel.categories.collectAsState()
     val refreshHandler = useRefreshHandler()
+    val favoriteStatus by viewModel.productFavoriteStatus.collectAsState()
 
     LaunchedEffect(products, category) {
         if (refreshHandler.isRefreshing &&
@@ -85,7 +85,7 @@ fun HomeScreen(
                         LazyRow(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp)
+                                .padding(vertical = 8.dp, horizontal = 5.dp),
                         ) {
                             items(data.size) { index ->
                                 val categoryItem = data[index]
@@ -121,7 +121,14 @@ fun HomeScreen(
                     LazyColumn(modifier = Modifier.weight(1f)) {
                         items(data.size) { index ->
                             val product = data[index]
-                            ProductCard(product = product) {
+                            val isFavorite = favoriteStatus[product.id] ?: false
+                            ProductCard(
+                                product = product,
+                                isFavorite = isFavorite,
+                                onFavoriteClick = {
+                                    viewModel.toggleFavorite(product)
+                                },
+                            ) {
                                 navController.navigate("product/${product.id}")
                             }
                         }
@@ -143,6 +150,8 @@ fun HomeScreen(
 @Composable
 fun ProductCard(
     product: Product,
+    isFavorite: Boolean = false,
+    onFavoriteClick: () -> Unit,
     onClick: () -> Unit
 ) {
     Card(
@@ -165,21 +174,21 @@ fun ProductCard(
                         MaterialTheme.colorScheme.primaryContainer
                     )
             ) {
-                AndroidView(
-                    factory = { context ->
-                        ImageView(context).apply {
-                            layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                600 // Height in pixels
-                            )
+                GlideImage(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp),
+                    imageModel = { product.imageUrl },
+                    loading = {
+                        Box(contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp))
                         }
                     },
-                    update = { imageView ->
-                        Glide.with(imageView)
-                            .load(product.imageUrl)
-                            .centerCrop()
-                            .into(imageView)
-                    }
+                    failure = {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(text = "Failed to load image")
+                        }
+                    },
                 )
             }
             Text(
@@ -200,15 +209,15 @@ fun ProductCard(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(
-                    onClick = { /* TODO: Add to cart */ }
+                    onClick = { onFavoriteClick() },
                 ) {
                     Icon(
-                        imageVector = Icons.Default.FavoriteBorder,
-                        contentDescription = "Add to cart",
-                        tint = MaterialTheme.colorScheme.primary,
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = if (isFavorite) "Видалити з вибраного" else "Додати до вибраного",
+                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
                         modifier = Modifier
-                            .size(30.dp)
-                            .padding(4.dp)
+                            .size(40.dp)
+                            .padding(6.dp)
                     )
                 }
             }

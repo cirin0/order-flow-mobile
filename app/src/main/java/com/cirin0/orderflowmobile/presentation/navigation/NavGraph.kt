@@ -42,7 +42,9 @@ fun AppNavHost(
             )
         }
         composable(NavRoutes.FAVORITES) {
-            FavoritesScreen()
+            FavoritesScreen(
+                navController = navController
+            )
         }
         composable(NavRoutes.CART) {
             CartScreen()
