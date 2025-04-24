@@ -11,4 +11,6 @@
     <string name="forgot_password">Забули пароль?</string>
     <string name="not_registered">Ще не зареєстровані? Зареєструйтеся</string>
     <string name="already_registered">Вже зареєстровані? Увійти</string>
+    <string name="login_to_your_account">Увійдіть до свого облікового запису</string>
+    <string name="logout">Вийти з облікового запису</string>
 </resources>
