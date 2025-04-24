@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -50,6 +51,7 @@ fun HomeScreen(
     val products by viewModel.products.collectAsState()
     val category by viewModel.categories.collectAsState()
     val refreshHandler = useRefreshHandler()
+    val favoriteStatus by viewModel.productFavoriteStatus.collectAsState()
 
     LaunchedEffect(products, category) {
         if (refreshHandler.isRefreshing &&
@@ -119,7 +121,14 @@ fun HomeScreen(
                     LazyColumn(modifier = Modifier.weight(1f)) {
                         items(data.size) { index ->
                             val product = data[index]
-                            ProductCard(product = product) {
+                            val isFavorite = favoriteStatus[product.id] ?: false
+                            ProductCard(
+                                product = product,
+                                isFavorite = isFavorite,
+                                onFavoriteClick = {
+                                    viewModel.toggleFavorite(product)
+                                },
+                            ) {
                                 navController.navigate("product/${product.id}")
                             }
                         }
@@ -141,6 +150,8 @@ fun HomeScreen(
 @Composable
 fun ProductCard(
     product: Product,
+    isFavorite: Boolean = false,
+    onFavoriteClick: () -> Unit,
     onClick: () -> Unit
 ) {
     Card(
@@ -198,15 +209,15 @@ fun ProductCard(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(
-                    onClick = { /* TODO: Add to cart */ }
+                    onClick = { onFavoriteClick() },
                 ) {
                     Icon(
-                        imageVector = Icons.Default.FavoriteBorder,
-                        contentDescription = "Add to cart",
-                        tint = MaterialTheme.colorScheme.primary,
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = if (isFavorite) "Видалити з вибраного" else "Додати до вибраного",
+                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
                         modifier = Modifier
-                            .size(30.dp)
-                            .padding(4.dp)
+                            .size(40.dp)
+                            .padding(6.dp)
                     )
                 }
             }
