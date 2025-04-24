@@ -357,7 +357,6 @@ fun SearchCategoryItem(
         },
         modifier = Modifier
             .clickable(onClick = onClick)
-
     )
 }
 
