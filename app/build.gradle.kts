@@ -82,4 +82,8 @@ dependencies {
 
     implementation(libs.kotlinx.serialization)
     implementation(libs.androidx.swiperefreshlayout)
+
+    // Datastore
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.datastore.preferences.core)
 }

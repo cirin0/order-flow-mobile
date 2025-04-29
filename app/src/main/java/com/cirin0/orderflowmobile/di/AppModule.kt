@@ -1,5 +1,6 @@
 package com.cirin0.orderflowmobile.di
 
+import com.cirin0.orderflowmobile.data.local.interceptor.AuthInterceptor
 import com.cirin0.orderflowmobile.data.remote.AuthApi
 import com.cirin0.orderflowmobile.data.remote.CategoryApi
 import com.cirin0.orderflowmobile.data.remote.ProductApi
@@ -23,6 +24,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -31,17 +34,26 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
+
     @Provides
     @Singleton
-    fun provideRetrofit(): Retrofit {
+    fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         val baseUrl = "http://192.168.0.106:5000/"
         val secondUrl = "https://order-flow-6eb68b9f406e.herokuapp.com/"
 
         val finalUrl = try {
-            val client = okhttp3.OkHttpClient.Builder()
+            val client = OkHttpClient.Builder()
                 .connectTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
                 .build()
-            val request = okhttp3.Request.Builder()
+            val request = Request.Builder()
                 .url(baseUrl)
                 .build()
             client.newCall(request).execute().use { response ->
@@ -53,6 +65,7 @@ object AppModule {
 
         return Retrofit.Builder()
             .baseUrl(finalUrl)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -65,9 +78,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAuthRepository(api: AuthApi): AuthRepository {
-        return AuthRepositoryImpl(api)
-    }
+    fun provideAuthRepository(authRepositoryImpl: AuthRepositoryImpl): AuthRepository =
+        authRepositoryImpl
 
     @Provides
     @Singleton
@@ -146,5 +158,4 @@ object AppModule {
     fun provideSearchRepository(api: SearchApi): SearchRepository {
         return SearchRepositoryImpl(api)
     }
-
 }

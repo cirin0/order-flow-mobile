@@ -16,6 +16,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -23,19 +25,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.cirin0.orderflowmobile.R
+import com.cirin0.orderflowmobile.presentation.screen.viewmodel.ProfileViewModel
 
 @Composable
 fun ProfileScreen(
-    isAuthenticated: Boolean,
     onNavigateToLogin: () -> Unit,
     onNavigateToRegister: () -> Unit,
 ) {
 
+    val viewModel: ProfileViewModel = hiltViewModel()
+    val isAuthenticated by viewModel.isAuthenticated.collectAsState(initial = false)
+    val userEmail by viewModel.userEmail.collectAsState()
     val scrollState = rememberScrollState()
 
     if (isAuthenticated) {
-        AuthenticatedUserContent()
+        AuthenticatedUserContent(
+            email = userEmail,
+            onLogoutClick = {
+                viewModel.logout()
+            },
+            scrollState = scrollState
+        )
     } else {
         UnauthenticatedUserContent(
             onLoginClick = onNavigateToLogin,
@@ -46,31 +58,44 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun AuthenticatedUserContent() {
-    Text(
-        text = "Мій профіль",
-        fontSize = 24.sp,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.primary
-    )
-
-    Spacer(modifier = Modifier.height(32.dp))
-
-    Text(
-        text = "Ви успішно увійшли в систему",
-        fontSize = 16.sp
-    )
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    Button(
-        onClick = { /* Logout logic */ },
+private fun AuthenticatedUserContent(
+    email: String,
+    onLogoutClick: () -> Unit,
+    scrollState: ScrollState,
+) {
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp),
-        shape = RoundedCornerShape(8.dp)
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(scrollState),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = stringResource(id = R.string.logout))
+        Text(
+            text = "Мій профіль",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(
+            text = "Ви успішно увійшли в систему як $email",
+            fontSize = 16.sp
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = onLogoutClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Text(text = stringResource(id = R.string.logout))
+        }
     }
 }
 
