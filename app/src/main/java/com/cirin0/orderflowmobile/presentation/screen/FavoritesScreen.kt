@@ -1,5 +1,6 @@
 package com.cirin0.orderflowmobile.presentation.screen
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,8 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
@@ -53,6 +56,7 @@ fun FavoritesScreen(
     val viewModel: FavoriteViewModel = hiltViewModel()
     val favorites by viewModel.favorites.collectAsState()
     val refreshHandler = useRefreshHandler()
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(favorites) {
         if (refreshHandler.isRefreshing && favorites !is Resource.Loading) {
@@ -71,11 +75,9 @@ fun FavoritesScreen(
         ) {
             Text(
                 text = "Вибране",
-                fontSize = 24.sp,
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(vertical = 16.dp),
-                textAlign = TextAlign.Center
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             )
 
             when (favorites) {
@@ -91,7 +93,9 @@ fun FavoritesScreen(
                 is Resource.Success -> {
                     val favoritesList = favorites.data ?: emptyList()
                     if (favoritesList.isEmpty()) {
-                        EmptyFavoritesList()
+                        EmptyFavoritesList(
+                            scrollState = scrollState
+                        )
                     } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize()
@@ -100,6 +104,7 @@ fun FavoritesScreen(
                                 val favorite = favoritesList[index]
                                 FavoriteItem(
                                     favorite = favorite,
+                                    scrollState = scrollState,
                                     onItemClick = {
                                         navController.navigate("product/${favorite.id}")
                                     },
@@ -113,15 +118,16 @@ fun FavoritesScreen(
                 }
 
                 is Resource.Error -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = favorites.message ?: "Помилка завантаження улюблених",
-                            color = MaterialTheme.colorScheme.error
-                        )
+                    val errorMessage = when {
+                        favorites.message?.contains("timeout", ignoreCase = true) == true ->
+                            "Не вдалося завантажити товар через повільне з'єднання. Будь ласка, перевірте підключення до інтернету та спробуйте знову."
+
+                        favorites.message?.contains("hostname", ignoreCase = true) == true ->
+                            "Відсутнє підключення до інтернету. Перевірте налаштування мережі та спробуйте знову."
+
+                        else -> favorites.message ?: "Сталася невідома помилка. Спробуйте пізніше."
                     }
+                    ErrorView(errorMessage = errorMessage, scrollState = scrollState)
                 }
             }
         }
@@ -132,9 +138,13 @@ fun FavoritesScreen(
 @Composable
 fun FavoriteItem(
     favorite: FavoriteProduct,
+    scrollState: ScrollState,
     onItemClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
+    LaunchedEffect(scrollState) {
+        scrollState.scrollTo(0)
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -220,12 +230,15 @@ fun FavoriteItem(
 }
 
 @Composable
-fun EmptyFavoritesList() {
+fun EmptyFavoritesList(
+    scrollState: ScrollState
+) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column(
+            modifier = Modifier.verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -250,24 +263,6 @@ fun EmptyFavoritesList() {
                 text = "Додайте товари до вибраного, щоб бачити їх тут",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-@Composable
-fun ErrorView(errorMessage: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = errorMessage,
-                color = MaterialTheme.colorScheme.error,
                 textAlign = TextAlign.Center
             )
         }
