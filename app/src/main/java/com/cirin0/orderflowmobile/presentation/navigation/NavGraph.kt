@@ -30,7 +30,6 @@ object NavRoutes {
 fun AppNavHost(
     navController: NavHostController,
     startDestination: String = NavRoutes.HOME,
-    isAuthenticated: Boolean = false,
 ) {
     NavHost(
         navController = navController,
@@ -51,7 +50,6 @@ fun AppNavHost(
         }
         composable(NavRoutes.PROFILE) {
             ProfileScreen(
-                isAuthenticated = isAuthenticated,
                 onNavigateToLogin = { navController.navigate(NavRoutes.LOGIN) },
                 onNavigateToRegister = { navController.navigate(NavRoutes.REGISTER) }
             )
