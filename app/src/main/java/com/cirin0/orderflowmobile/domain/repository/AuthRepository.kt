@@ -1,16 +1,18 @@
 package com.cirin0.orderflowmobile.domain.repository
 
-import com.cirin0.orderflowmobile.domain.model.LoginRequest
-import com.cirin0.orderflowmobile.domain.model.LoginResponse
-import com.cirin0.orderflowmobile.domain.model.RegisterResponse
+import com.cirin0.orderflowmobile.domain.model.AuthResponse
 import com.cirin0.orderflowmobile.util.Resource
 
 interface AuthRepository {
-    suspend fun login(email: String, password: String): Resource<LoginResponse>
+    suspend fun login(email: String, password: String): Resource<AuthResponse>
     suspend fun register(
         firstName: String,
         lastName: String,
         email: String,
         password: String
-    ): Resource<RegisterResponse>
-} 
+    ): Resource<AuthResponse>
+
+    suspend fun refreshToken(): Resource<AuthResponse>
+    suspend fun validateToken(): Resource<Boolean>
+    suspend fun logout()
+}
