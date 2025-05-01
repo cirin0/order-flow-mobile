@@ -1,6 +1,6 @@
 package com.cirin0.orderflowmobile.domain.usecase
 
-import com.cirin0.orderflowmobile.domain.model.AuthResponse
+import com.cirin0.orderflowmobile.domain.model.user.AuthResponse
 import com.cirin0.orderflowmobile.domain.repository.AuthRepository
 import com.cirin0.orderflowmobile.util.Resource
 import kotlinx.coroutines.flow.Flow

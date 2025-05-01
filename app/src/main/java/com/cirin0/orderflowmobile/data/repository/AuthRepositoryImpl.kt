@@ -1,10 +1,10 @@
 package com.cirin0.orderflowmobile.data.repository
 
 import com.cirin0.orderflowmobile.data.remote.AuthApi
-import com.cirin0.orderflowmobile.domain.model.AuthResponse
-import com.cirin0.orderflowmobile.domain.model.LoginRequest
-import com.cirin0.orderflowmobile.domain.model.RefreshTokenRequest
-import com.cirin0.orderflowmobile.domain.model.RegisterRequest
+import com.cirin0.orderflowmobile.domain.model.auth.LoginRequest
+import com.cirin0.orderflowmobile.domain.model.auth.RefreshTokenRequest
+import com.cirin0.orderflowmobile.domain.model.auth.RegisterRequest
+import com.cirin0.orderflowmobile.domain.model.user.AuthResponse
 import com.cirin0.orderflowmobile.domain.repository.AuthRepository
 import com.cirin0.orderflowmobile.util.Resource
 import com.cirin0.orderflowmobile.util.TokenManager
