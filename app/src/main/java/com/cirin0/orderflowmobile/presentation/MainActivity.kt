@@ -4,9 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.cirin0.orderflowmobile.presentation.navigation.MainScreen
-import com.cirin0.orderflowmobile.presentation.navigation.MainViewModel
 import com.cirin0.orderflowmobile.presentation.ui.theme.OrderFlowMobileTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -17,10 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             OrderFlowMobileTheme {
-                val mainViewModel = hiltViewModel<MainViewModel>()
-                MainScreen(
-                    isAuthenticated = mainViewModel.isAuthenticated.value,
-                )
+                MainScreen()
             }
         }
     }

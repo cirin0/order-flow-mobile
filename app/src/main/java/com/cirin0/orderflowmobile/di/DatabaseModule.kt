@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.room.Room
 import com.cirin0.orderflowmobile.data.local.dao.AppDatabase
 import com.cirin0.orderflowmobile.data.local.dao.FavoriteDao
+import com.cirin0.orderflowmobile.data.local.interceptor.AuthInterceptor
 import com.cirin0.orderflowmobile.data.repository.FavoriteRepositoryImpl
 import com.cirin0.orderflowmobile.domain.repository.FavoriteRepository
+import com.cirin0.orderflowmobile.util.TokenManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,5 +38,11 @@ object DatabaseModule {
     @Singleton
     fun provideFavoriteRepository(favoriteDao: FavoriteDao): FavoriteRepository {
         return FavoriteRepositoryImpl(favoriteDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthInterceptor(tokenManager: TokenManager): AuthInterceptor {
+        return AuthInterceptor(tokenManager)
     }
 }

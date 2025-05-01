@@ -1,6 +1,6 @@
 package com.cirin0.orderflowmobile.domain.usecase
 
-import com.cirin0.orderflowmobile.domain.model.RegisterResponse
+import com.cirin0.orderflowmobile.domain.model.user.AuthResponse
 import com.cirin0.orderflowmobile.domain.repository.AuthRepository
 import com.cirin0.orderflowmobile.util.Resource
 import kotlinx.coroutines.flow.Flow
@@ -15,7 +15,7 @@ class RegisterUseCase @Inject constructor(
         lastName: String,
         email: String,
         password: String
-    ): Flow<Resource<RegisterResponse>> = flow {
+    ): Flow<Resource<AuthResponse>> = flow {
         emit(Resource.Loading())
         val result = repository.register(firstName, lastName, email, password)
         emit(result)
