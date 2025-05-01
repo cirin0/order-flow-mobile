@@ -1,9 +1,9 @@
 package com.cirin0.orderflowmobile.data.remote
 
-import com.cirin0.orderflowmobile.domain.model.AuthResponse
-import com.cirin0.orderflowmobile.domain.model.LoginRequest
-import com.cirin0.orderflowmobile.domain.model.RefreshTokenRequest
-import com.cirin0.orderflowmobile.domain.model.RegisterRequest
+import com.cirin0.orderflowmobile.domain.model.auth.LoginRequest
+import com.cirin0.orderflowmobile.domain.model.auth.RefreshTokenRequest
+import com.cirin0.orderflowmobile.domain.model.auth.RegisterRequest
+import com.cirin0.orderflowmobile.domain.model.user.AuthResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST

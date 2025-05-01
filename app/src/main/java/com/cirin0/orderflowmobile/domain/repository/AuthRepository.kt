@@ -1,6 +1,6 @@
 package com.cirin0.orderflowmobile.domain.repository
 
-import com.cirin0.orderflowmobile.domain.model.AuthResponse
+import com.cirin0.orderflowmobile.domain.model.user.AuthResponse
 import com.cirin0.orderflowmobile.util.Resource
 
 interface AuthRepository {
