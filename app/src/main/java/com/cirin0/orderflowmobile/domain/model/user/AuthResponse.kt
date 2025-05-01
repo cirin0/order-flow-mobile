@@ -1,4 +1,4 @@
-package com.cirin0.orderflowmobile.domain.model
+package com.cirin0.orderflowmobile.domain.model.user
 
 data class AuthResponse(
     val userId: String,
