@@ -1,11 +1,12 @@
 package com.cirin0.orderflowmobile.presentation.screen.viewmodel
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cirin0.orderflowmobile.domain.model.ProductDetails
+import com.cirin0.orderflowmobile.domain.model.review.ReviewResponse
 import com.cirin0.orderflowmobile.domain.usecase.AddFavoriteUseCase
 import com.cirin0.orderflowmobile.domain.usecase.GetProductByIdUseCase
+import com.cirin0.orderflowmobile.domain.usecase.GetReviewByProductIdUseCase
 import com.cirin0.orderflowmobile.domain.usecase.IsFavoriteUseCase
 import com.cirin0.orderflowmobile.domain.usecase.RemoveFavoriteUseCase
 import com.cirin0.orderflowmobile.util.Resource
@@ -20,10 +21,10 @@ import javax.inject.Inject
 @HiltViewModel
 class ProductViewModel @Inject constructor(
     private val getProductByIdUseCase: GetProductByIdUseCase,
-    savedStateHandle: SavedStateHandle,
     private val addFavoriteUseCase: AddFavoriteUseCase,
     private val removeFavoriteUseCase: RemoveFavoriteUseCase,
     private val isFavoriteUseCase: IsFavoriteUseCase,
+    private val getReviewByProductIdUseCase: GetReviewByProductIdUseCase,
 ) : ViewModel() {
 
     private val _product = MutableStateFlow<Resource<ProductDetails>>(Resource.Loading())
@@ -32,11 +33,8 @@ class ProductViewModel @Inject constructor(
     private val _isFavorite = MutableStateFlow(false)
     val isFavorite: StateFlow<Boolean> = _isFavorite.asStateFlow()
 
-//    init {
-//        savedStateHandle.get<String>("productId")?.let { productId ->
-//            getProduct(productId)
-//        }
-//    }
+    private val _reviews = MutableStateFlow<Resource<List<ReviewResponse>>>(Resource.Loading())
+    val reviews: StateFlow<Resource<List<ReviewResponse>>> = _reviews.asStateFlow()
 
     fun getProduct(id: String) {
         viewModelScope.launch {
@@ -60,7 +58,6 @@ class ProductViewModel @Inject constructor(
         getProduct(id)
     }
 
-
     fun toggleFavorite() {
         viewModelScope.launch {
             val productValue = _product.value
@@ -73,6 +70,18 @@ class ProductViewModel @Inject constructor(
                     addFavoriteUseCase(productDetails)
                     _isFavorite.value = true
                 }
+            }
+        }
+    }
+
+    fun getReviews(productId: String) {
+        viewModelScope.launch {
+            _reviews.value = Resource.Loading()
+            try {
+                val result = getReviewByProductIdUseCase(productId)
+                _reviews.value = result
+            } catch (e: Exception) {
+                _reviews.value = Resource.Error(message = e.message ?: "Unknown error")
             }
         }
     }
