@@ -43,6 +43,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.cirin0.orderflowmobile.domain.model.FavoriteProduct
 import com.cirin0.orderflowmobile.presentation.screen.viewmodel.FavoriteViewModel
+import com.cirin0.orderflowmobile.presentation.ui.component.ErrorView
 import com.cirin0.orderflowmobile.presentation.ui.component.PullToRefreshWrapper
 import com.cirin0.orderflowmobile.presentation.ui.component.useRefreshHandler
 import com.cirin0.orderflowmobile.util.Resource

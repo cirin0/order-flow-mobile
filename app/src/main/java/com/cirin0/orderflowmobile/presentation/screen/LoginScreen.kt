@@ -52,6 +52,7 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
     onNavigateToRegister: () -> Unit,
+    onNavigateToPasswordReset: () -> Unit,
 ) {
     val state = viewModel.state.value
     var passwordVisibility by remember { mutableStateOf(false) }
@@ -78,6 +79,9 @@ fun LoginScreen(
         state = state,
         onRegisterClick = {
             onNavigateToRegister()
+        },
+        onPasswordResetClick = {
+            onNavigateToPasswordReset()
         }
     )
 }
@@ -90,6 +94,7 @@ fun LoginView(
     viewModel: LoginViewModel,
     state: LoginState,
     onRegisterClick: () -> Unit,
+    onPasswordResetClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -189,6 +194,15 @@ fun LoginView(
                 .padding(top = 20.dp)
                 .clickable(
                     onClick = onRegisterClick,
+                )
+        )
+        Text(
+            text = stringResource(id = R.string.forgot_password),
+            fontSize = 16.sp,
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .clickable(
+                    onClick = onPasswordResetClick,
                 )
         )
     }

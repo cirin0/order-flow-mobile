@@ -36,9 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -46,6 +44,7 @@ import com.bumptech.glide.Glide
 import com.cirin0.orderflowmobile.domain.model.ProductDetails
 import com.cirin0.orderflowmobile.domain.model.review.ReviewResponse
 import com.cirin0.orderflowmobile.presentation.screen.viewmodel.ProductViewModel
+import com.cirin0.orderflowmobile.presentation.ui.component.ErrorView
 import com.cirin0.orderflowmobile.presentation.ui.component.PullToRefreshWrapper
 import com.cirin0.orderflowmobile.presentation.ui.component.useRefreshHandler
 import com.cirin0.orderflowmobile.util.Resource
@@ -130,31 +129,6 @@ fun ProductScreen(
     }
 }
 
-
-@Composable
-fun ErrorView(errorMessage: String, scrollState: ScrollState) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = errorMessage,
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = 20.sp,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-            Spacer(modifier = Modifier.size(100.dp))
-        }
-    }
-}
 
 fun checkStock(stock: Int): Boolean {
     return stock > 0

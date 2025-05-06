@@ -11,6 +11,7 @@ import com.cirin0.orderflowmobile.presentation.screen.CategoryScreen
 import com.cirin0.orderflowmobile.presentation.screen.FavoritesScreen
 import com.cirin0.orderflowmobile.presentation.screen.HomeScreen
 import com.cirin0.orderflowmobile.presentation.screen.LoginScreen
+import com.cirin0.orderflowmobile.presentation.screen.PasswordResetScreen
 import com.cirin0.orderflowmobile.presentation.screen.ProductScreen
 import com.cirin0.orderflowmobile.presentation.screen.ProfileScreen
 import com.cirin0.orderflowmobile.presentation.screen.RegisterScreen
@@ -24,6 +25,7 @@ object NavRoutes {
     const val REGISTER = "register"
     const val PRODUCT = "product"
     const val CATEGORY = "category"
+    const val PASSWORD_RESET = "password_reset"
 }
 
 @Composable
@@ -63,6 +65,9 @@ fun AppNavHost(
                 onNavigateToRegister = {
                     navController.navigate(NavRoutes.REGISTER)
                 },
+                onNavigateToPasswordReset = {
+                    navController.navigate(NavRoutes.PASSWORD_RESET)
+                }
             )
         }
 
@@ -95,6 +100,14 @@ fun AppNavHost(
             CategoryScreen(
                 navController = navController,
                 name = name
+            )
+        }
+        composable(NavRoutes.PASSWORD_RESET) {
+            PasswordResetScreen(
+                onResetSuccess = {
+                    navController.popBackStack()
+                    navController.navigate(NavRoutes.LOGIN)
+                }
             )
         }
     }

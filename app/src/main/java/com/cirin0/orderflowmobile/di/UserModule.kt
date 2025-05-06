@@ -1,7 +1,10 @@
 package com.cirin0.orderflowmobile.di
 
+import com.cirin0.orderflowmobile.data.remote.PasswordResetApi
 import com.cirin0.orderflowmobile.data.remote.UserApi
+import com.cirin0.orderflowmobile.data.repository.PasswordResetRepositoryImpl
 import com.cirin0.orderflowmobile.data.repository.UserRepositoryImpl
+import com.cirin0.orderflowmobile.domain.repository.PasswordResetRepository
 import com.cirin0.orderflowmobile.domain.repository.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -24,4 +27,17 @@ object UserModule {
     fun provideUserRepository(userApiService: UserApi): UserRepository {
         return UserRepositoryImpl(userApiService)
     }
+
+    @Singleton
+    @Provides
+    fun providePasswordResetApi(retrofit: Retrofit): PasswordResetApi {
+        return retrofit.create(PasswordResetApi::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun providePasswordResetRepository(passwordApiService: PasswordResetApi): PasswordResetRepository {
+        return PasswordResetRepositoryImpl(passwordApiService)
+    }
+
 }
