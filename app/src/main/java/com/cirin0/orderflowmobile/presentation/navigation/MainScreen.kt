@@ -50,7 +50,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -122,7 +121,9 @@ fun MainScreen(
         NavRoutes.LOGIN,
         NavRoutes.REGISTER,
         NavRoutes.CART,
-        NavRoutes.FAVORITES
+        NavRoutes.FAVORITES,
+        NavRoutes.CATEGORY,
+        NavRoutes.PASSWORD_RESET,
     )
     val shouldShowSearchBar = currentRoute !in routesWithoutSearchBar
 
@@ -134,7 +135,8 @@ fun MainScreen(
             NavRoutes.CART,
             NavRoutes.PROFILE,
             NavRoutes.LOGIN,
-            NavRoutes.REGISTER
+            NavRoutes.REGISTER,
+            NavRoutes.PASSWORD_RESET,
         ) -> true
 
         currentDestination.route?.startsWith("${NavRoutes.CATEGORY}/") == true -> true
@@ -412,11 +414,4 @@ fun SearchProductItem(
         },
         modifier = Modifier.clickable(onClick = onClick)
     )
-}
-
-@Preview
-@Composable
-fun MainScreenPreview() {
-    val navController = rememberNavController()
-    MainScreen(navController = navController)
 }

@@ -22,8 +22,11 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.ResponseBody
+import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.lang.reflect.Type
 import javax.inject.Singleton
 
 @Module
@@ -40,7 +43,27 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    fun provideConverterFactory(): Converter.Factory {
+        return object : Converter.Factory() {
+            override fun responseBodyConverter(
+                type: Type,
+                annotations: Array<out Annotation>,
+                retrofit: Retrofit
+            ): Converter<ResponseBody, *>? {
+                if (type == String::class.java) {
+                    return Converter<ResponseBody, String> { value -> value.string() }
+                }
+                return null
+            }
+        }
+    }
+
+    @Provides
+    @Singleton
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient,
+        textConverter: Converter.Factory,
+    ): Retrofit {
         val baseUrl = "http://192.168.0.106:5000/"
         val secondUrl = "https://order-flow-6eb68b9f406e.herokuapp.com/"
 
@@ -61,6 +84,7 @@ object AppModule {
         return Retrofit.Builder()
             .baseUrl(finalUrl)
             .client(okHttpClient)
+            .addConverterFactory(textConverter)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
