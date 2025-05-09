@@ -1,5 +1,7 @@
 package com.cirin0.orderflowmobile.presentation.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -36,6 +38,12 @@ fun AppNavHost(
     NavHost(
         navController = navController,
         startDestination = startDestination,
+        exitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left,
+                animationSpec = tween(300)
+            )
+        }
     ) {
         composable(NavRoutes.HOME) {
             HomeScreen(
@@ -48,7 +56,9 @@ fun AppNavHost(
             )
         }
         composable(NavRoutes.CART) {
-            CartScreen()
+            CartScreen(
+                navController = navController,
+            )
         }
         composable(NavRoutes.PROFILE) {
             ProfileScreen(

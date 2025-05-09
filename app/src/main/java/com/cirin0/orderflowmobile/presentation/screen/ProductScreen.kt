@@ -1,7 +1,6 @@
 package com.cirin0.orderflowmobile.presentation.screen
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.compose.foundation.ScrollState
@@ -43,6 +42,7 @@ import androidx.navigation.NavHostController
 import com.bumptech.glide.Glide
 import com.cirin0.orderflowmobile.domain.model.ProductDetails
 import com.cirin0.orderflowmobile.domain.model.review.ReviewResponse
+import com.cirin0.orderflowmobile.presentation.navigation.NavRoutes
 import com.cirin0.orderflowmobile.presentation.screen.viewmodel.ProductViewModel
 import com.cirin0.orderflowmobile.presentation.ui.component.ErrorView
 import com.cirin0.orderflowmobile.presentation.ui.component.PullToRefreshWrapper
@@ -60,9 +60,17 @@ fun ProductScreen(
     val product by viewModel.product.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
     val reviews by viewModel.reviews.collectAsState()
+    val isAddingToCart by viewModel.isAddingToCart.collectAsState()
+    val isInCart by viewModel.isInCart.collectAsState()
 
     val refreshHandler = useRefreshHandler()
     val scrollState = rememberScrollState()
+
+    LaunchedEffect(key1 = id) {
+        id?.let { productId ->
+            viewModel.checkIfInCart(productId)
+        }
+    }
 
     LaunchedEffect(key1 = id) {
         id?.let { productId ->
@@ -107,7 +115,12 @@ fun ProductScreen(
                         scrollState = scrollState,
                         isFavorite = isFavorite,
                         reviews = reviews,
-                        onToggleFavorite = { viewModel.toggleFavorite() })
+                        onToggleFavorite = { viewModel.toggleFavorite() },
+                        isAddingToCart = isAddingToCart,
+                        isInCart = isInCart,
+                        onAddToCart = { viewModel.addToCart(data) },
+                        navController = navController,
+                    )
                 } else {
                     Text("Товар не знайдено", color = MaterialTheme.colorScheme.error)
                 }
@@ -141,7 +154,11 @@ fun ProductDetails(
     scrollState: ScrollState,
     isFavorite: Boolean,
     reviews: Resource<List<ReviewResponse>>,
-    onToggleFavorite: () -> Unit
+    onToggleFavorite: () -> Unit,
+    isAddingToCart: Boolean,
+    isInCart: Boolean,
+    onAddToCart: () -> Unit,
+    navController: NavHostController,
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -266,19 +283,31 @@ fun ProductDetails(
         }
         Button(
             onClick = {
-                if (!checkStock(product.stock)) {
-                    Log.d("ProductDetails", "Товар недоступний")
+                if (isInCart) {
+                    navController.navigate(NavRoutes.CART)
+                    navController.previousBackStackEntry
+                } else {
+                    if (checkStock(product.stock)) {
+                        onAddToCart()
+                    }
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
                 .padding(horizontal = 10.dp, vertical = 10.dp),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(8.dp),
+            enabled = checkStock(product.stock)
         ) {
-            if (checkStock(product.stock)) {
+            if (isAddingToCart) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.dp
+                )
+            } else if (checkStock(product.stock)) {
                 Text(
-                    text = "Додати в кошик",
+                    text = if (isInCart) "Перейти до кошика" else "Додати в кошик",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
@@ -287,7 +316,7 @@ fun ProductDetails(
                     text = "Товар недоступний",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(vertical = 8.dp),
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
         }
