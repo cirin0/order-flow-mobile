@@ -125,7 +125,14 @@ fun MainScreen(
         NavRoutes.CATEGORY,
         NavRoutes.PASSWORD_RESET,
     )
-    val shouldShowSearchBar = currentRoute !in routesWithoutSearchBar
+
+    val shouldShowSearchBar = when {
+        currentRoute == null -> true
+        currentRoute in routesWithoutSearchBar -> false
+        currentRoute.startsWith("${NavRoutes.PRODUCT}/") -> false
+        currentRoute.startsWith("${NavRoutes.CATEGORY}/") -> false
+        else -> true
+    }
 
     val showBottomNav = when {
         currentDestination?.route == null -> false

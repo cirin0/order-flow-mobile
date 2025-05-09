@@ -49,6 +49,21 @@ class ProductViewModel @Inject constructor(
     private val _isInCart = MutableStateFlow(false)
     val isInCart: StateFlow<Boolean> = _isInCart.asStateFlow()
 
+    private val _isLoggedIn = MutableStateFlow(false)
+    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
+
+
+    init {
+        checkLoginStatus()
+    }
+
+    private fun checkLoginStatus() {
+        viewModelScope.launch {
+            val userId = tokenManager.userId.firstOrNull() ?: ""
+            _isLoggedIn.value = userId.isNotEmpty() && tokenManager.isTokenValid()
+        }
+    }
+
     fun addToCart(product: ProductDetails, quantity: Int = 1) {
         viewModelScope.launch {
             _isAddingToCart.value = true
