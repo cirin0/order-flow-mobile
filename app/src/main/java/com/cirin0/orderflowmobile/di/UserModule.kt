@@ -1,7 +1,13 @@
 package com.cirin0.orderflowmobile.di
 
+import com.cirin0.orderflowmobile.data.remote.CartApi
+import com.cirin0.orderflowmobile.data.remote.PasswordResetApi
 import com.cirin0.orderflowmobile.data.remote.UserApi
+import com.cirin0.orderflowmobile.data.repository.CartRepositoryImpl
+import com.cirin0.orderflowmobile.data.repository.PasswordResetRepositoryImpl
 import com.cirin0.orderflowmobile.data.repository.UserRepositoryImpl
+import com.cirin0.orderflowmobile.domain.repository.CartRepository
+import com.cirin0.orderflowmobile.domain.repository.PasswordResetRepository
 import com.cirin0.orderflowmobile.domain.repository.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -23,5 +29,29 @@ object UserModule {
     @Provides
     fun provideUserRepository(userApiService: UserApi): UserRepository {
         return UserRepositoryImpl(userApiService)
+    }
+
+    @Singleton
+    @Provides
+    fun providePasswordResetApi(retrofit: Retrofit): PasswordResetApi {
+        return retrofit.create(PasswordResetApi::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun providePasswordResetRepository(passwordApiService: PasswordResetApi): PasswordResetRepository {
+        return PasswordResetRepositoryImpl(passwordApiService)
+    }
+
+    @Singleton
+    @Provides
+    fun provideUserCartApi(retrofit: Retrofit): CartApi {
+        return retrofit.create(CartApi::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideUserCartRepository(cartApiService: CartApi): CartRepository {
+        return CartRepositoryImpl(cartApiService)
     }
 }

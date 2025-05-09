@@ -4,36 +4,34 @@ import com.cirin0.orderflowmobile.data.local.interceptor.AuthInterceptor
 import com.cirin0.orderflowmobile.data.remote.AuthApi
 import com.cirin0.orderflowmobile.data.remote.CategoryApi
 import com.cirin0.orderflowmobile.data.remote.ProductApi
+import com.cirin0.orderflowmobile.data.remote.ReviewApi
 import com.cirin0.orderflowmobile.data.remote.SearchApi
 import com.cirin0.orderflowmobile.data.repository.AuthRepositoryImpl
 import com.cirin0.orderflowmobile.data.repository.CategoryRepositoryImpl
 import com.cirin0.orderflowmobile.data.repository.ProductRepositoryImpl
+import com.cirin0.orderflowmobile.data.repository.ReviewRepositoryImpl
 import com.cirin0.orderflowmobile.data.repository.SearchRepositoryImpl
 import com.cirin0.orderflowmobile.domain.repository.AuthRepository
 import com.cirin0.orderflowmobile.domain.repository.CategoryRepository
 import com.cirin0.orderflowmobile.domain.repository.ProductRepository
+import com.cirin0.orderflowmobile.domain.repository.ReviewRepository
 import com.cirin0.orderflowmobile.domain.repository.SearchRepository
-import com.cirin0.orderflowmobile.domain.usecase.GetCategoriesUseCase
-import com.cirin0.orderflowmobile.domain.usecase.GetCategoryByIdUseCase
-import com.cirin0.orderflowmobile.domain.usecase.GetProductByCategoryNameUseCase
-import com.cirin0.orderflowmobile.domain.usecase.GetProductByIdUseCase
-import com.cirin0.orderflowmobile.domain.usecase.GetProductsUseCase
-import com.cirin0.orderflowmobile.domain.usecase.LoginUseCase
-import com.cirin0.orderflowmobile.domain.usecase.RegisterUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.ResponseBody
+import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.lang.reflect.Type
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
 
     @Provides
     @Singleton
@@ -45,7 +43,27 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    fun provideConverterFactory(): Converter.Factory {
+        return object : Converter.Factory() {
+            override fun responseBodyConverter(
+                type: Type,
+                annotations: Array<out Annotation>,
+                retrofit: Retrofit
+            ): Converter<ResponseBody, *>? {
+                if (type == String::class.java) {
+                    return Converter<ResponseBody, String> { value -> value.string() }
+                }
+                return null
+            }
+        }
+    }
+
+    @Provides
+    @Singleton
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient,
+        textConverter: Converter.Factory,
+    ): Retrofit {
         val baseUrl = "http://192.168.0.106:5000/"
         val secondUrl = "https://order-flow-6eb68b9f406e.herokuapp.com/"
 
@@ -66,6 +84,7 @@ object AppModule {
         return Retrofit.Builder()
             .baseUrl(finalUrl)
             .client(okHttpClient)
+            .addConverterFactory(textConverter)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -83,18 +102,6 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideLoginUseCase(repository: AuthRepository): LoginUseCase {
-        return LoginUseCase(repository)
-    }
-
-    @Provides
-    @Singleton
-    fun provideRegisterUseCase(repository: AuthRepository): RegisterUseCase {
-        return RegisterUseCase(repository)
-    }
-
-    @Provides
-    @Singleton
     fun provideProductApi(retrofit: Retrofit): ProductApi {
         return retrofit.create(ProductApi::class.java)
     }
@@ -103,18 +110,6 @@ object AppModule {
     @Singleton
     fun provideProductRepository(api: ProductApi): ProductRepository {
         return ProductRepositoryImpl(api)
-    }
-
-    @Provides
-    @Singleton
-    fun provideGetProductsUseCase(repository: ProductRepository): GetProductsUseCase {
-        return GetProductsUseCase(repository)
-    }
-
-    @Provides
-    @Singleton
-    fun provideGetProductByIdUseCase(repository: ProductRepository): GetProductByIdUseCase {
-        return GetProductByIdUseCase(repository)
     }
 
     @Provides
@@ -131,25 +126,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideGetCategoriesUseCase(repository: CategoryRepository): GetCategoriesUseCase {
-        return GetCategoriesUseCase(repository)
-    }
-
-    @Provides
-    @Singleton
-    fun provideGetCategoryByIdUseCase(repository: CategoryRepository): GetCategoryByIdUseCase {
-        return GetCategoryByIdUseCase(repository)
-    }
-
-    @Provides
-    @Singleton
-    fun provideGetProductByCategoryNameUseCase(repository: ProductRepository): GetProductByCategoryNameUseCase {
-        return GetProductByCategoryNameUseCase(repository)
-    }
-
-    @Provides
-    @Singleton
-    fun provideServiceApi(retrofit: Retrofit): SearchApi {
+    fun provideSearchApi(retrofit: Retrofit): SearchApi {
         return retrofit.create(SearchApi::class.java)
     }
 
@@ -157,5 +134,17 @@ object AppModule {
     @Singleton
     fun provideSearchRepository(api: SearchApi): SearchRepository {
         return SearchRepositoryImpl(api)
+    }
+
+    @Provides
+    @Singleton
+    fun provideReviewApi(retrofit: Retrofit): ReviewApi {
+        return retrofit.create(ReviewApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideReviewRepository(api: ReviewApi): ReviewRepository {
+        return ReviewRepositoryImpl(api)
     }
 }

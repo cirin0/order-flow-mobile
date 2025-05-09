@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -38,6 +39,7 @@ import androidx.navigation.NavHostController
 import com.cirin0.orderflowmobile.domain.model.Category
 import com.cirin0.orderflowmobile.domain.model.Product
 import com.cirin0.orderflowmobile.presentation.screen.viewmodel.HomeViewModel
+import com.cirin0.orderflowmobile.presentation.ui.component.ErrorView
 import com.cirin0.orderflowmobile.presentation.ui.component.PullToRefreshWrapper
 import com.cirin0.orderflowmobile.presentation.ui.component.useRefreshHandler
 import com.cirin0.orderflowmobile.util.Resource
@@ -52,6 +54,7 @@ fun HomeScreen(
     val category by viewModel.categories.collectAsState()
     val refreshHandler = useRefreshHandler()
     val favoriteStatus by viewModel.productFavoriteStatus.collectAsState()
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(products, category) {
         if (refreshHandler.isRefreshing &&
@@ -66,31 +69,82 @@ fun HomeScreen(
         modifier = Modifier.fillMaxSize(),
         onRefresh = { viewModel.refreshData() },
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                when (category) {
-                    is Resource.Loading -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
+        if (products is Resource.Loading && category is Resource.Loading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
 
+        } else if (products is Resource.Error && category is Resource.Error) {
+            val errorMessage = when {
+                (products.message ?: category.message)?.contains(
+                    "timeout",
+                    ignoreCase = true
+                ) == true ->
+                    "Не вдалося завантажити товар через повільне з'єднання. Будь ласка, перевірте підключення до інтернету та спробуйте знову."
+
+                (products.message ?: category.message)?.contains(
+                    "hostname",
+                    ignoreCase = true
+                ) == true ->
+                    "Відсутнє підключення до інтернету. Перевірте налаштування мережі та спробуйте знову."
+
+                else -> (products.message ?: category.message)
+                    ?: "Сталася невідома помилка. Спробуйте пізніше."
+            }
+
+
+            ErrorView(
+                errorMessage = errorMessage, scrollState
+            )
+        } else {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    when (category) {
+                        is Resource.Success -> {
+                            val data = category.data ?: emptyList()
+                            LazyRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp, horizontal = 5.dp),
+                            ) {
+                                items(data.size) { index ->
+                                    val categoryItem = data[index]
+                                    CategoryRow(category = categoryItem) {
+                                        navController.navigate("category/${categoryItem.name}")
+                                    }
+                                }
+                            }
+                        }
+
+                        is Resource.Error -> {
+                            Text(
+                                text = category.message ?: "Unknown error",
+                                modifier = Modifier.padding(16.dp),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+
+                        else -> {}
+                    }
+                }
+                when (products) {
                     is Resource.Success -> {
-                        val data = category.data ?: emptyList()
-                        LazyRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp, horizontal = 5.dp),
-                        ) {
+                        val data = products.data ?: emptyList()
+                        LazyColumn(modifier = Modifier.weight(1f)) {
                             items(data.size) { index ->
-                                val categoryItem = data[index]
-                                CategoryRow(category = categoryItem) {
-                                    navController.navigate("category/${categoryItem.name}")
+                                val product = data[index]
+                                val isFavorite = favoriteStatus[product.id] ?: false
+                                ProductCard(
+                                    product = product,
+                                    isFavorite = isFavorite,
+                                    onFavoriteClick = {
+                                        viewModel.toggleFavorite(product)
+                                    },
+                                ) {
+                                    navController.navigate("product/${product.id}")
                                 }
                             }
                         }
@@ -98,49 +152,13 @@ fun HomeScreen(
 
                     is Resource.Error -> {
                         Text(
-                            text = category.message ?: "Unknown error",
+                            text = products.message ?: "Unknown error",
                             modifier = Modifier.padding(16.dp),
                             color = MaterialTheme.colorScheme.error
                         )
                     }
-                }
-            }
 
-            when (products) {
-                is Resource.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
-
-                is Resource.Success -> {
-                    val data = products.data ?: emptyList()
-                    LazyColumn(modifier = Modifier.weight(1f)) {
-                        items(data.size) { index ->
-                            val product = data[index]
-                            val isFavorite = favoriteStatus[product.id] ?: false
-                            ProductCard(
-                                product = product,
-                                isFavorite = isFavorite,
-                                onFavoriteClick = {
-                                    viewModel.toggleFavorite(product)
-                                },
-                            ) {
-                                navController.navigate("product/${product.id}")
-                            }
-                        }
-                    }
-                }
-
-                is Resource.Error -> {
-                    Text(
-                        text = products.message ?: "Unknown error",
-                        modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    else -> {}
                 }
             }
         }

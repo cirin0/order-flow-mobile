@@ -25,10 +25,6 @@ fun StyledButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Black
         ),
-//        border = BorderStroke(
-//            width = 1.dp,
-//            color = Color.Black
-//        ),
         enabled = enabled,
     ) {
         Box(
