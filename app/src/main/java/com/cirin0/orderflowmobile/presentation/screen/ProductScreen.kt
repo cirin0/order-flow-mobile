@@ -1,8 +1,6 @@
 package com.cirin0.orderflowmobile.presentation.screen
 
 import android.annotation.SuppressLint
-import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -20,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.NotInterested
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,12 +33,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.bumptech.glide.Glide
 import com.cirin0.orderflowmobile.domain.model.ProductDetails
 import com.cirin0.orderflowmobile.domain.model.review.ReviewResponse
 import com.cirin0.orderflowmobile.presentation.navigation.NavRoutes
@@ -48,6 +46,7 @@ import com.cirin0.orderflowmobile.presentation.ui.component.ErrorView
 import com.cirin0.orderflowmobile.presentation.ui.component.PullToRefreshWrapper
 import com.cirin0.orderflowmobile.presentation.ui.component.useRefreshHandler
 import com.cirin0.orderflowmobile.util.Resource
+import com.skydoves.landscapist.glide.GlideImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,14 +61,13 @@ fun ProductScreen(
     val reviews by viewModel.reviews.collectAsState()
     val isAddingToCart by viewModel.isAddingToCart.collectAsState()
     val isInCart by viewModel.isInCart.collectAsState()
+    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
 
     val refreshHandler = useRefreshHandler()
     val scrollState = rememberScrollState()
 
-    LaunchedEffect(key1 = id) {
-        id?.let { productId ->
-            viewModel.checkIfInCart(productId)
-        }
+    id?.let { productId ->
+        viewModel.checkIfInCart(productId)
     }
 
     LaunchedEffect(key1 = id) {
@@ -118,6 +116,7 @@ fun ProductScreen(
                         onToggleFavorite = { viewModel.toggleFavorite() },
                         isAddingToCart = isAddingToCart,
                         isInCart = isInCart,
+                        isLoggedIn = isLoggedIn,
                         onAddToCart = { viewModel.addToCart(data) },
                         navController = navController,
                     )
@@ -157,6 +156,7 @@ fun ProductDetails(
     onToggleFavorite: () -> Unit,
     isAddingToCart: Boolean,
     isInCart: Boolean,
+    isLoggedIn: Boolean,
     onAddToCart: () -> Unit,
     navController: NavHostController,
 ) {
@@ -167,23 +167,34 @@ fun ProductDetails(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp, vertical = 10.dp)
-                .padding(bottom = 50.dp)
+                .padding(bottom = 60.dp)
                 .verticalScroll(scrollState)
         ) {
-            AndroidView(
-                factory = { context ->
-                    ImageView(context).apply {
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            1000
-                        )
+            GlideImage(
+                imageModel = { product.imageUrl },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp)
+                    .clip(
+                        shape = RoundedCornerShape(8.dp)
+                    ),
+                loading = {
+                    Box(contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp))
                     }
                 },
-                update = { imageView ->
-                    Glide.with(imageView)
-                        .load(product.imageUrl)
-                        .centerCrop()
-                        .into(imageView)
+                failure = {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.NotInterested,
+                            contentDescription = "Error loading image",
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(50.dp)
+                        )
+                    }
                 }
             )
             Text(
@@ -287,7 +298,7 @@ fun ProductDetails(
                     navController.navigate(NavRoutes.CART)
                     navController.previousBackStackEntry
                 } else {
-                    if (checkStock(product.stock)) {
+                    if (checkStock(product.stock) && isLoggedIn) {
                         onAddToCart()
                     }
                 }
@@ -297,13 +308,20 @@ fun ProductDetails(
                 .align(Alignment.BottomCenter)
                 .padding(horizontal = 10.dp, vertical = 10.dp),
             shape = RoundedCornerShape(8.dp),
-            enabled = checkStock(product.stock)
+            enabled = checkStock(product.stock) && (isLoggedIn || isInCart)
         ) {
             if (isAddingToCart) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier.size(40.dp),
                     color = MaterialTheme.colorScheme.onPrimary,
                     strokeWidth = 2.dp
+                )
+            } else if (!isLoggedIn && !isInCart) {
+                Text(
+                    text = "Увійдіть, щоб додати в кошик",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             } else if (checkStock(product.stock)) {
                 Text(
