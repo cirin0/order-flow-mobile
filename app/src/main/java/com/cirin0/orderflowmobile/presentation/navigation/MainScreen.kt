@@ -300,7 +300,9 @@ fun MainScreen(
                             onClick = {
                                 val isResetNeeded = item.route == NavRoutes.HOME &&
                                     (currentDestination?.route?.startsWith("${NavRoutes.PRODUCT}/") == true ||
-                                        currentDestination?.route?.startsWith("${NavRoutes.CATEGORY}/") == true)
+                                        currentDestination?.route?.startsWith("${NavRoutes.CATEGORY}/") == true ||
+                                        currentDestination?.route == NavRoutes.CART ||
+                                        currentDestination?.route == NavRoutes.LOGIN)
 
                                 navController.navigate(item.route) {
                                     popUpTo(navController.graph.findStartDestination().id) {
