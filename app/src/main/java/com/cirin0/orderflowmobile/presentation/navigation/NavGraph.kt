@@ -57,7 +57,17 @@ fun AppNavHost(
         }
         composable(NavRoutes.CART) {
             CartScreen(
-                navController = navController,
+                onNavigateToLogin = {
+                    navController.navigate(NavRoutes.LOGIN) {
+                        popUpTo(NavRoutes.CART) { inclusive = true }
+                    }
+                },
+                onNavigateToHome = {
+                    navController.navigate(NavRoutes.HOME) {
+                        popUpTo(NavRoutes.HOME) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                },
             )
         }
         composable(NavRoutes.PROFILE) {

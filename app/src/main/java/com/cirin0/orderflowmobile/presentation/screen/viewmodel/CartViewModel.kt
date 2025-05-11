@@ -25,7 +25,15 @@ class CartViewModel @Inject constructor(
     val cart: StateFlow<Resource<CartResponse>> = _cart.asStateFlow()
 
     init {
-        loadCart()
+        viewModelScope.launch {
+            tokenManager.userId.collect { userId ->
+                if (userId.isNotBlank()) {
+                    loadCart()
+                } else {
+                    _cart.value = Resource.Error("User not logged in")
+                }
+            }
+        }
     }
 
     private suspend fun getUserId(): String {
@@ -42,7 +50,8 @@ class CartViewModel @Inject constructor(
                     if (result is Resource.Error) {
                         _cart.value = Resource.Error("Failed to load cart")
                     } else {
-                        _cart.value = result
+                        val sortedResult = sortCartItems(result)
+                        _cart.value = sortedResult
                     }
                 } catch (e: Exception) {
                     _cart.value = Resource.Error(message = e.message ?: "Unknown error")
@@ -59,7 +68,8 @@ class CartViewModel @Inject constructor(
             val cartId = cartData?.id ?: return@launch
             val result = cartRepository.updateItemInCart(cartId, itemId, quantity)
             if (result is Resource.Success) {
-                _cart.value = result
+                val sortedResult = sortCartItems(result)
+                _cart.value = sortedResult
             } else {
                 _cart.value = Resource.Error("Failed to update item in cart")
             }
@@ -73,7 +83,8 @@ class CartViewModel @Inject constructor(
 
             val result = cartRepository.removeItemFromCart(cartId, itemId)
             if (result is Resource.Success) {
-                _cart.value = result
+                val sortedResult = sortCartItems(result)
+                _cart.value = sortedResult
             } else {
                 _cart.value = Resource.Error("Failed to remove item from cart")
             }
@@ -87,12 +98,23 @@ class CartViewModel @Inject constructor(
 
             val result = cartRepository.clearCart(cartId)
             if (result is Resource.Success) {
-                _cart.value = result
+                val sortedResult = sortCartItems(result)
+                _cart.value = sortedResult
             } else {
                 _cart.value = Resource.Error("Failed to clear cart")
             }
         }
     }
+
+    private fun sortCartItems(resource: Resource<CartResponse>): Resource<CartResponse> {
+        if (resource !is Resource.Success || resource.data == null) {
+            return resource
+        }
+
+        val cartData = resource.data
+        val sortedItems = cartData.items.sortedBy { it.id }
+
+        val newCartData = cartData.copy(items = sortedItems)
+        return Resource.Success(newCartData)
+    }
 }
-
-

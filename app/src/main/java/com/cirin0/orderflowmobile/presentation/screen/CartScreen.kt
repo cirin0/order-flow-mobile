@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -51,10 +52,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import com.cirin0.orderflowmobile.domain.model.cart.CartItem
 import com.cirin0.orderflowmobile.domain.model.cart.CartResponse
-import com.cirin0.orderflowmobile.presentation.navigation.NavRoutes
 import com.cirin0.orderflowmobile.presentation.screen.viewmodel.CartViewModel
 import com.cirin0.orderflowmobile.presentation.ui.component.ErrorView
 import com.cirin0.orderflowmobile.presentation.ui.component.PullToRefreshWrapper
@@ -68,7 +67,8 @@ import com.skydoves.landscapist.glide.GlideImage
 @Composable
 fun CartScreen(
     modifier: Modifier = Modifier,
-    navController: NavHostController,
+    onNavigateToLogin: () -> Unit,
+    onNavigateToHome: () -> Unit,
 ) {
     val viewModel: CartViewModel = hiltViewModel()
     val cart by viewModel.cart.collectAsState()
@@ -116,13 +116,7 @@ fun CartScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         EmptyCartView(
-                            onContinueShopping = {
-                                navController.navigate(NavRoutes.HOME) {
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        inclusive = false
-                                    }
-                                }
-                            },
+                            onContinueShopping = onNavigateToHome,
                             scrollState = scrollState
                         )
                     }
@@ -132,9 +126,7 @@ fun CartScreen(
             is Resource.Error -> {
                 if (cart.message?.contains("logged", ignoreCase = true) == true) {
                     NotLoggedInView(
-                        onLogin = {
-                            navController.navigate(NavRoutes.LOGIN)
-                        }
+                        onLogin = onNavigateToLogin
                     )
                 } else {
                     val errorMessage = when {
@@ -168,6 +160,7 @@ fun CartContent(
     onCheckout: () -> Unit
 ) {
     var showClearCartDialog by remember { mutableStateOf(false) }
+    val lazyListState = rememberLazyListState()
 
     Column(
         modifier = Modifier
@@ -181,11 +174,15 @@ fun CartContent(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         )
         LazyColumn(
+            state = lazyListState,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
         ) {
-            items(cart.items.size) { index ->
+            items(
+                count = cart.items.size,
+                key = { index -> cart.items[index].id }
+            ) { index ->
                 val item = cart.items[index]
                 CartItemCard(
                     item = item,
@@ -197,9 +194,7 @@ fun CartContent(
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
-        HorizontalDivider(
-            modifier = Modifier.padding(vertical = 4.dp)
-        )
+        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
         Row(
             modifier = Modifier
@@ -282,6 +277,9 @@ fun CartItemCard(
     onQuantityChange: (Int) -> Unit,
     onRemoveItem: () -> Unit
 ) {
+    val currentQuantity = remember(item.quantity) { item.quantity }
+    val stockQuantity = remember(item.stockQuantity) { item.stockQuantity }
+
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -341,7 +339,7 @@ fun CartItemCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "В наявності: ${item.stockQuantity}",
+                    text = "В наявності: $stockQuantity",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.outline
                 )
@@ -356,8 +354,8 @@ fun CartItemCard(
                 ) {
                     IconButton(
                         onClick = {
-                            if (item.quantity > 1) {
-                                onQuantityChange(item.quantity - 1)
+                            if (currentQuantity > 1) {
+                                onQuantityChange(currentQuantity - 1)
                             }
                         },
                     ) {
@@ -374,15 +372,15 @@ fun CartItemCard(
                     }
 
                     Text(
-                        text = item.quantity.toString(),
+                        text = currentQuantity.toString(),
                         modifier = Modifier.padding(horizontal = 8.dp),
                         fontWeight = FontWeight.Bold
                     )
 
                     IconButton(
                         onClick = {
-                            if (item.quantity < item.stockQuantity) {
-                                onQuantityChange(item.quantity + 1)
+                            if (currentQuantity < stockQuantity) {
+                                onQuantityChange(currentQuantity + 1)
                             }
                         },
                     ) {
