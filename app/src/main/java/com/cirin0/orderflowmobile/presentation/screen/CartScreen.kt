@@ -72,6 +72,7 @@ fun CartScreen(
 ) {
     val viewModel: CartViewModel = hiltViewModel()
     val cart by viewModel.cart.collectAsState()
+    val syncingStates by viewModel.syncingStates.collectAsState()
     val scrollState = rememberScrollState()
 
     PullToRefreshWrapper(
@@ -97,8 +98,9 @@ fun CartScreen(
                 if (cartData != null && cartData.items.isNotEmpty()) {
                     CartContent(
                         cart = cartData,
+                        syncingStates = syncingStates,
                         onUpdateQuantity = { itemId, quantity ->
-                            viewModel.updateItemQuantity(itemId, quantity)
+                            viewModel.updateItemQuantityOptimistic(itemId, quantity)
                         },
                         onRemoveItem = { itemId ->
                             viewModel.removeItem(itemId)
@@ -154,6 +156,7 @@ fun CartScreen(
 @Composable
 fun CartContent(
     cart: CartResponse,
+    syncingStates: Map<String, Boolean> = emptyMap(),
     onUpdateQuantity: (String, Int) -> Unit,
     onRemoveItem: (String) -> Unit,
     onClearCart: () -> Unit,
@@ -184,12 +187,14 @@ fun CartContent(
                 key = { index -> cart.items[index].id }
             ) { index ->
                 val item = cart.items[index]
+                val isSyncing = syncingStates[item.id] ?: false
                 CartItemCard(
                     item = item,
                     onQuantityChange = { quantity ->
                         onUpdateQuantity(item.id, quantity)
                     },
-                    onRemoveItem = { onRemoveItem(item.id) }
+                    onRemoveItem = { onRemoveItem(item.id) },
+                    isSyncing = isSyncing
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -275,7 +280,8 @@ fun CartContent(
 fun CartItemCard(
     item: CartItem,
     onQuantityChange: (Int) -> Unit,
-    onRemoveItem: () -> Unit
+    onRemoveItem: () -> Unit,
+    isSyncing: Boolean = false
 ) {
     val currentQuantity = remember(item.quantity) { item.quantity }
     val stockQuantity = remember(item.stockQuantity) { item.stockQuantity }
@@ -347,7 +353,6 @@ fun CartItemCard(
             Column(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.SpaceBetween,
-//                modifier = Modifier.fillMaxHeight()
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -358,6 +363,7 @@ fun CartItemCard(
                                 onQuantityChange(currentQuantity - 1)
                             }
                         },
+                        enabled = !isSyncing
                     ) {
                         Icon(
                             imageVector = Icons.Default.Remove,
@@ -365,17 +371,34 @@ fun CartItemCard(
                             modifier = Modifier
                                 .size(30.dp)
                                 .background(
-                                    color = MaterialTheme.colorScheme.secondaryContainer,
+                                    color = if (!isSyncing)
+                                        MaterialTheme.colorScheme.secondaryContainer
+                                    else
+                                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
                                     shape = CircleShape
                                 )
                         )
                     }
 
-                    Text(
-                        text = currentQuantity.toString(),
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                        fontWeight = FontWeight.Bold
-                    )
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.width(40.dp)
+                    ) {
+                        Text(
+                            text = currentQuantity.toString(),
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        if (isSyncing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .padding(2.dp),
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    }
 
                     IconButton(
                         onClick = {
@@ -383,6 +406,7 @@ fun CartItemCard(
                                 onQuantityChange(currentQuantity + 1)
                             }
                         },
+                        enabled = !isSyncing
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
@@ -390,7 +414,10 @@ fun CartItemCard(
                             modifier = Modifier
                                 .size(30.dp)
                                 .background(
-                                    color = MaterialTheme.colorScheme.secondaryContainer,
+                                    color = if (!isSyncing)
+                                        MaterialTheme.colorScheme.secondaryContainer
+                                    else
+                                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
                                     shape = CircleShape
                                 )
                         )
@@ -406,8 +433,13 @@ fun CartItemCard(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.errorContainer)
-                            .clickable { onRemoveItem() },
+                            .background(
+                                if (!isSyncing)
+                                    MaterialTheme.colorScheme.errorContainer
+                                else
+                                    MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)
+                            )
+                            .clickable(enabled = !isSyncing) { onRemoveItem() },
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
