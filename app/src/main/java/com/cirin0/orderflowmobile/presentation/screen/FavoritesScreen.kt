@@ -70,7 +70,7 @@ fun FavoritesScreen(
         onRefresh = { viewModel.loadFavorites() }
     ) {
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 8.dp)
         ) {
