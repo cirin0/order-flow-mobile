@@ -47,6 +47,8 @@ import com.cirin0.orderflowmobile.presentation.ui.component.PullToRefreshWrapper
 import com.cirin0.orderflowmobile.presentation.ui.component.useRefreshHandler
 import com.cirin0.orderflowmobile.util.Resource
 import com.skydoves.landscapist.glide.GlideImage
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -413,15 +415,12 @@ fun RatingStars(rating: Int) {
 }
 
 fun formatDate(dateString: String): String {
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
     return try {
-        val parts = dateString.split("T")
-        if (parts.isNotEmpty()) {
-            parts[0].replace("-", ".")
-        } else {
-            dateString
-        }
+        val date = dateFormat.parse(dateString)
+        val formattedDate = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(date!!)
+        formattedDate
     } catch (e: Exception) {
         dateString
     }
 }
-

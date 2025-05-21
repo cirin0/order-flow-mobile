@@ -124,6 +124,9 @@ fun MainScreen(
         NavRoutes.FAVORITES,
         NavRoutes.CATEGORY,
         NavRoutes.PASSWORD_RESET,
+        NavRoutes.USER_ORDERS,
+        NavRoutes.ORDER,
+        NavRoutes.ORDER_DETAILS
     )
 
     val shouldShowSearchBar = when {
@@ -131,6 +134,7 @@ fun MainScreen(
         currentRoute in routesWithoutSearchBar -> false
         currentRoute.startsWith("${NavRoutes.PRODUCT}/") -> false
         currentRoute.startsWith("${NavRoutes.CATEGORY}/") -> false
+        currentRoute.startsWith("${NavRoutes.ORDER_DETAILS}/") -> false
         else -> true
     }
 
@@ -144,10 +148,14 @@ fun MainScreen(
             NavRoutes.LOGIN,
             NavRoutes.REGISTER,
             NavRoutes.PASSWORD_RESET,
+            NavRoutes.USER_ORDERS,
+            NavRoutes.ORDER,
+            NavRoutes.ORDER_DETAILS
         ) -> true
 
         currentDestination.route?.startsWith("${NavRoutes.CATEGORY}/") == true -> true
         currentDestination.route?.startsWith("${NavRoutes.PRODUCT}/") == true -> true
+        currentDestination.route?.startsWith("${NavRoutes.ORDER_DETAILS}/") == true -> true
         else -> false
     }
 

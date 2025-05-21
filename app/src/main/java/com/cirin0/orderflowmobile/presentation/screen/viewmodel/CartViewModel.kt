@@ -51,9 +51,7 @@ class CartViewModel @Inject constructor(
             val updatedItems = currentCart.items.map { item ->
                 if (item.id == itemId) item.copy(quantity = newQuantity) else item
             }
-
             val newTotalPrice = updatedItems.sumOf { it.price * it.quantity }
-
             val updatedCart = currentCart.copy(
                 items = updatedItems,
                 totalPrice = newTotalPrice
@@ -77,20 +75,14 @@ class CartViewModel @Inject constructor(
         try {
             val result = cartRepository.updateItemInCart(cartId, itemId, quantityToSync)
             if (result is Resource.Success) {
-                // Після успішної синхронізації оновлюємо кошик із даними з сервера
                 _cart.value = sortCartItems(result)
-
-                // Видаляємо запис із черги оновлень
                 pendingQuantityUpdates.remove(itemId)
             } else {
-                // Якщо синхронізація не вдалася, перезавантажуємо кошик
                 loadCart()
             }
         } catch (e: Exception) {
-            // При помилці перезавантажуємо кошик повністю
             loadCart()
         } finally {
-            // В будь-якому випадку знімаємо стан синхронізації
             setSyncingState(itemId, false)
         }
     }
@@ -129,20 +121,6 @@ class CartViewModel @Inject constructor(
                 }
             } else {
                 _cart.value = Resource.Error("User not logged in")
-            }
-        }
-    }
-
-    fun updateItemQuantity(itemId: String, quantity: Int) {
-        viewModelScope.launch {
-            val cartData = (_cart.value as? Resource.Success)?.data
-            val cartId = cartData?.id ?: return@launch
-            val result = cartRepository.updateItemInCart(cartId, itemId, quantity)
-            if (result is Resource.Success) {
-                val sortedResult = sortCartItems(result)
-                _cart.value = sortedResult
-            } else {
-                _cart.value = Resource.Error("Failed to update item in cart")
             }
         }
     }
