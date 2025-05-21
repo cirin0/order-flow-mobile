@@ -13,4 +13,5 @@
     <string name="already_registered">Вже зареєстровані? Увійти</string>
     <string name="login_to_your_account">Увійдіть до свого облікового запису</string>
     <string name="logout">Вийти з облікового запису</string>
+    <string name="my_orders">Мої замовлення</string>
 </resources>

@@ -60,6 +60,7 @@ import com.cirin0.orderflowmobile.util.Resource
 fun ProfileScreen(
     onNavigateToLogin: () -> Unit,
     onNavigateToRegister: () -> Unit,
+    onNavigateToOrders: () -> Unit,
 ) {
     val viewModel: ProfileViewModel = hiltViewModel()
     val isAuthenticated by viewModel.isAuthenticated.collectAsState(initial = false)
@@ -107,6 +108,20 @@ fun ProfileScreen(
                             item {
                                 val userData = user.data
                                 userData?.let { UserProfileContent(it, viewModel) }
+                            }
+
+                            item {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Button(
+                                    onClick = onNavigateToOrders,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(50.dp)
+                                        .padding(horizontal = 16.dp),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text(text = stringResource(id = R.string.my_orders))
+                                }
                             }
 
                             item {
