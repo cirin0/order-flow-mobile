@@ -1,6 +1,7 @@
 package com.cirin0.orderflowmobile.presentation.screen
 
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,8 +21,8 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,6 +39,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -56,18 +58,11 @@ fun LoginScreen(
 ) {
     val state = viewModel.state.value
     var passwordVisibility by remember { mutableStateOf(false) }
-    val snackbarHostState = remember { SnackbarHostState() }
     val scrollState = rememberScrollState()
 
     LaunchedEffect(key1 = state.isSuccess) {
         if (state.isSuccess) {
             onLoginSuccess()
-        }
-    }
-
-    LaunchedEffect(key1 = state.error) {
-        if (state.error.isNotEmpty()) {
-            snackbarHostState.showSnackbar(message = state.error)
         }
     }
 
@@ -119,6 +114,21 @@ fun LoginView(
                 .padding(top = 75.dp)
                 .padding(bottom = 25.dp),
         )
+        if (state.error.isNotEmpty()) {
+            Text(
+                text = if (state.error.contains("500"))
+                    stringResource(id = R.string.invalid_credentials)
+                else
+                    state.error,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp)
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(vertical = 8.dp),
+                textAlign = TextAlign.Center
+            )
+        }
         OutlinedTextField(
             value = viewModel.email.value,
             onValueChange = viewModel::onEmailChanged,
@@ -136,7 +146,17 @@ fun LoginView(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
             ),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(8.dp),
+            isError = !viewModel.isEmailValid.value && viewModel.email.value.isNotEmpty(),
+            supportingText = {
+                if (!viewModel.isEmailValid.value && viewModel.email.value.isNotEmpty()) {
+                    Text(
+                        text = stringResource(id = R.string.invalid_email),
+                        color = Color.Red,
+                        fontSize = 12.sp
+                    )
+                }
+            }
         )
         OutlinedTextField(
             value = viewModel.password.value,
@@ -163,11 +183,21 @@ fun LoginView(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
             ),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(8.dp),
+            isError = !viewModel.isPasswordValid.value && viewModel.password.value.isNotEmpty(),
+            supportingText = {
+                if (!viewModel.isPasswordValid.value && viewModel.password.value.isNotEmpty()) {
+                    Text(
+                        text = stringResource(id = R.string.invalid_password),
+                        color = Color.Red,
+                        fontSize = 12.sp
+                    )
+                }
+            }
         )
         StyledButton(
             modifier = Modifier
-                .padding(vertical = 25.dp)
+                .padding(vertical = 15.dp)
                 .fillMaxWidth(),
             onClick = { viewModel.login() },
             content = {
@@ -180,18 +210,21 @@ fun LoginView(
                     Text(
                         text = stringResource(id = R.string.login),
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White
+                        style = MaterialTheme.typography.titleMedium,
                     )
                 }
             },
-            enabled = !state.isLoading && viewModel.email.value.isNotEmpty() && viewModel.password.value.isNotEmpty()
+            enabled = !state.isLoading
+                && viewModel.email.value.isNotEmpty()
+                && viewModel.password.value.isNotEmpty()
+                && viewModel.isEmailValid.value
+                && viewModel.isPasswordValid.value,
         )
         Text(
             text = stringResource(id = R.string.not_registered),
             fontSize = 16.sp,
             modifier = Modifier
-                .padding(top = 20.dp)
+                .padding(top = 15.dp)
                 .clickable(
                     onClick = onRegisterClick,
                 )
@@ -200,7 +233,7 @@ fun LoginView(
             text = stringResource(id = R.string.forgot_password),
             fontSize = 16.sp,
             modifier = Modifier
-                .padding(top = 20.dp)
+                .padding(top = 15.dp)
                 .clickable(
                     onClick = onPasswordResetClick,
                 )
