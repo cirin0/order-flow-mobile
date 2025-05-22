@@ -480,14 +480,14 @@ fun EmptyCartView(
 
         StyledButton(
             modifier = Modifier
+                .fillMaxWidth()
                 .padding(vertical = 25.dp)
-                .fillMaxWidth(),
+                .height(50.dp),
             onClick = onContinueShopping,
             content = {
                 Text(
                     text = "Продовжити покупки",
                     fontSize = 16.sp,
-                    color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
             },
@@ -547,7 +547,6 @@ fun NotLoggedInView(
                 Text(
                     text = "Увійти",
                     fontSize = 16.sp,
-                    color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
             }

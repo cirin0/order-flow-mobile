@@ -23,7 +23,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -58,18 +57,11 @@ fun RegisterScreen(
 
     val state = viewModel.state.value
     var passwordVisibility by remember { mutableStateOf(false) }
-    val snackbarHostState = remember { SnackbarHostState() }
     val scrollState = rememberScrollState()
 
     LaunchedEffect(key1 = state.isSuccess) {
         if (state.isSuccess) {
             onRegisterSuccess()
-        }
-    }
-
-    LaunchedEffect(key1 = state.error) {
-        if (state.error.isNotEmpty()) {
-            snackbarHostState.showSnackbar(message = state.error)
         }
     }
 
@@ -135,6 +127,17 @@ fun RegisterView(
                         imageVector = Icons.Default.Person,
                         contentDescription = "First Name Icon"
                     )
+                },
+                shape = RoundedCornerShape(8.dp),
+                isError = !viewModel.isFirstNameValid.value && viewModel.firstName.value.isNotEmpty(),
+                supportingText = {
+                    if (!viewModel.isFirstNameValid.value && viewModel.firstName.value.isNotEmpty()) {
+                        Text(
+                            text = "Введіть коректне ім'я",
+                            color = Color.Red,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
             )
 
@@ -154,6 +157,17 @@ fun RegisterView(
                         imageVector = Icons.Default.Person,
                         contentDescription = "Last Name Icon"
                     )
+                },
+                shape = RoundedCornerShape(8.dp),
+                isError = !viewModel.isLastNameValid.value && viewModel.lastName.value.isNotEmpty(),
+                supportingText = {
+                    if (!viewModel.isLastNameValid.value && viewModel.lastName.value.isNotEmpty()) {
+                        Text(
+                            text = "Введіть коректне прізвище",
+                            color = Color.Red,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
             )
         }
@@ -174,7 +188,17 @@ fun RegisterView(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
             ),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(8.dp),
+            isError = !viewModel.isEmailValid.value && viewModel.email.value.isNotEmpty(),
+            supportingText = {
+                if (!viewModel.isEmailValid.value && viewModel.email.value.isNotEmpty()) {
+                    Text(
+                        text = stringResource(id = R.string.invalid_email),
+                        color = Color.Red,
+                        fontSize = 12.sp
+                    )
+                }
+            }
         )
         OutlinedTextField(
             value = viewModel.password.value,
@@ -201,11 +225,21 @@ fun RegisterView(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
             ),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(8.dp),
+            isError = !viewModel.isPasswordValid.value && viewModel.password.value.isNotEmpty(),
+            supportingText = {
+                if (!viewModel.isPasswordValid.value && viewModel.password.value.isNotEmpty()) {
+                    Text(
+                        text = stringResource(id = R.string.invalid_password),
+                        color = Color.Red,
+                        fontSize = 12.sp
+                    )
+                }
+            }
         )
         StyledButton(
             modifier = Modifier
-                .padding(vertical = 25.dp)
+                .padding(vertical = 15.dp)
                 .fillMaxWidth(),
             onClick = { viewModel.register() },
             content = {
@@ -218,17 +252,24 @@ fun RegisterView(
                         text = stringResource(id = R.string.register),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color.White,
                     )
                 }
             },
-            enabled = !state.isLoading && viewModel.email.value.isNotEmpty() && viewModel.password.value.isNotEmpty()
+            enabled = !state.isLoading
+                && viewModel.email.value.isNotEmpty()
+                && viewModel.password.value.isNotEmpty()
+                && viewModel.firstName.value.isNotEmpty()
+                && viewModel.lastName.value.isNotEmpty()
+                && viewModel.isEmailValid.value
+                && viewModel.isPasswordValid.value
+                && viewModel.isFirstNameValid.value
+                && viewModel.isLastNameValid.value,
         )
         Text(
             text = stringResource(id = R.string.already_registered),
             fontSize = 16.sp,
             modifier = Modifier
-                .padding(top = 20.dp)
+                .padding(top = 15.dp)
                 .clickable(
                     onClick = onLoginClick,
                 )
