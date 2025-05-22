@@ -1,5 +1,6 @@
 package com.cirin0.orderflowmobile.presentation.screen.viewmodel
 
+import android.util.Patterns
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -26,12 +27,20 @@ class LoginViewModel @Inject constructor(
     private val _password = mutableStateOf("")
     val password: State<String> = _password
 
+    private val _isEmailValid = mutableStateOf(true)
+    val isEmailValid: State<Boolean> = _isEmailValid
+
+    private val _isPasswordValid = mutableStateOf(true)
+    val isPasswordValid: State<Boolean> = _isPasswordValid
+
     fun onEmailChanged(newEmail: String) {
         _email.value = newEmail
+        _isEmailValid.value = validateEmail(newEmail) || newEmail.isEmpty()
     }
 
     fun onPasswordChanged(newPassword: String) {
         _password.value = newPassword
+        _isPasswordValid.value = validatePassword(newPassword) || newPassword.isEmpty()
     }
 
     fun login() {
@@ -45,8 +54,11 @@ class LoginViewModel @Inject constructor(
                 }
 
                 is Resource.Error -> {
+                    val errorMessage = when {
+                        else -> result.message ?: "Помилка з'єднання з сервером"
+                    }
                     _state.value = LoginState(
-                        error = result.message ?: "Невідома помилка"
+                        error = errorMessage,
                     )
                 }
 
@@ -55,6 +67,15 @@ class LoginViewModel @Inject constructor(
                 }
             }
         }.launchIn(viewModelScope)
+    }
+
+    fun validateEmail(email: String): Boolean {
+        val pattern = Patterns.EMAIL_ADDRESS
+        return pattern.matcher(email).matches()
+    }
+
+    fun validatePassword(password: String): Boolean {
+        return password.length >= 5
     }
 }
 

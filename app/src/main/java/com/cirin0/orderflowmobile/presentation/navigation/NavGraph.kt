@@ -13,10 +13,13 @@ import com.cirin0.orderflowmobile.presentation.screen.CategoryScreen
 import com.cirin0.orderflowmobile.presentation.screen.FavoritesScreen
 import com.cirin0.orderflowmobile.presentation.screen.HomeScreen
 import com.cirin0.orderflowmobile.presentation.screen.LoginScreen
+import com.cirin0.orderflowmobile.presentation.screen.OrderDetailsScreen
+import com.cirin0.orderflowmobile.presentation.screen.OrderScreen
 import com.cirin0.orderflowmobile.presentation.screen.PasswordResetScreen
 import com.cirin0.orderflowmobile.presentation.screen.ProductScreen
 import com.cirin0.orderflowmobile.presentation.screen.ProfileScreen
 import com.cirin0.orderflowmobile.presentation.screen.RegisterScreen
+import com.cirin0.orderflowmobile.presentation.screen.UserOrdersScreen
 
 object NavRoutes {
     const val HOME = "home"
@@ -28,6 +31,9 @@ object NavRoutes {
     const val PRODUCT = "product"
     const val CATEGORY = "category"
     const val PASSWORD_RESET = "password_reset"
+    const val ORDER = "order"
+    const val USER_ORDERS = "user_orders"
+    const val ORDER_DETAILS = "order_details/{orderId}"
 }
 
 @Composable
@@ -68,12 +74,16 @@ fun AppNavHost(
                         launchSingleTop = true
                     }
                 },
+                onNavigateToCheckout = {
+                    navController.navigate(NavRoutes.ORDER)
+                }
             )
         }
         composable(NavRoutes.PROFILE) {
             ProfileScreen(
                 onNavigateToLogin = { navController.navigate(NavRoutes.LOGIN) },
-                onNavigateToRegister = { navController.navigate(NavRoutes.REGISTER) }
+                onNavigateToRegister = { navController.navigate(NavRoutes.REGISTER) },
+                onNavigateToOrders = { navController.navigate(NavRoutes.USER_ORDERS) },
             )
         }
         composable(NavRoutes.LOGIN) {
@@ -128,6 +138,28 @@ fun AppNavHost(
                     navController.popBackStack()
                     navController.navigate(NavRoutes.LOGIN)
                 }
+            )
+        }
+        composable(NavRoutes.USER_ORDERS) {
+            UserOrdersScreen(
+                navController = navController
+            )
+        }
+
+        composable(NavRoutes.ORDER) {
+            OrderScreen(
+                navController = navController,
+            )
+        }
+
+        composable(
+            route = "${NavRoutes.ORDER_DETAILS}/{orderId}",
+            arguments = listOf(navArgument("orderId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
+            OrderDetailsScreen(
+                orderId = orderId,
+                navController = navController,
             )
         }
     }

@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -29,11 +28,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -69,9 +67,11 @@ fun CartScreen(
     modifier: Modifier = Modifier,
     onNavigateToLogin: () -> Unit,
     onNavigateToHome: () -> Unit,
+    onNavigateToCheckout: () -> Unit,
 ) {
     val viewModel: CartViewModel = hiltViewModel()
     val cart by viewModel.cart.collectAsState()
+    val syncingStates by viewModel.syncingStates.collectAsState()
     val scrollState = rememberScrollState()
 
     PullToRefreshWrapper(
@@ -82,7 +82,7 @@ fun CartScreen(
             is Resource.Loading -> {
                 Box(
                     modifier = modifier
-                        .fillMaxWidth(),
+                        .fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
@@ -97,8 +97,9 @@ fun CartScreen(
                 if (cartData != null && cartData.items.isNotEmpty()) {
                     CartContent(
                         cart = cartData,
+                        syncingStates = syncingStates,
                         onUpdateQuantity = { itemId, quantity ->
-                            viewModel.updateItemQuantity(itemId, quantity)
+                            viewModel.updateItemQuantityOptimistic(itemId, quantity)
                         },
                         onRemoveItem = { itemId ->
                             viewModel.removeItem(itemId)
@@ -106,7 +107,7 @@ fun CartScreen(
                         onClearCart = {
                             viewModel.clearCart()
                         },
-                        onCheckout = { /* TODO: Navigate to checkout */ }
+                        onCheckout = onNavigateToCheckout
                     )
                 } else {
                     Box(
@@ -154,6 +155,7 @@ fun CartScreen(
 @Composable
 fun CartContent(
     cart: CartResponse,
+    syncingStates: Map<String, Boolean> = emptyMap(),
     onUpdateQuantity: (String, Int) -> Unit,
     onRemoveItem: (String) -> Unit,
     onClearCart: () -> Unit,
@@ -184,18 +186,18 @@ fun CartContent(
                 key = { index -> cart.items[index].id }
             ) { index ->
                 val item = cart.items[index]
+                val isSyncing = syncingStates[item.id] ?: false
                 CartItemCard(
                     item = item,
                     onQuantityChange = { quantity ->
                         onUpdateQuantity(item.id, quantity)
                     },
-                    onRemoveItem = { onRemoveItem(item.id) }
+                    onRemoveItem = { onRemoveItem(item.id) },
+                    isSyncing = isSyncing
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
-        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -227,7 +229,8 @@ fun CartContent(
         ) {
             OutlinedButton(
                 onClick = { showClearCartDialog = true },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(8.dp),
             ) {
                 Text("Очистити кошик")
             }
@@ -236,7 +239,7 @@ fun CartContent(
 
             Button(
                 onClick = onCheckout,
-//                modifier = Modifier.weight(1f)
+                shape = RoundedCornerShape(8.dp),
             ) {
                 Text(
                     text = "Оформити замовлення",
@@ -275,7 +278,8 @@ fun CartContent(
 fun CartItemCard(
     item: CartItem,
     onQuantityChange: (Int) -> Unit,
-    onRemoveItem: () -> Unit
+    onRemoveItem: () -> Unit,
+    isSyncing: Boolean = false
 ) {
     val currentQuantity = remember(item.quantity) { item.quantity }
     val stockQuantity = remember(item.stockQuantity) { item.stockQuantity }
@@ -286,7 +290,7 @@ fun CartItemCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
@@ -317,7 +321,7 @@ fun CartItemCard(
                     }
                 )
             }
-            Spacer(modifier = Modifier.width(5.dp))
+            Spacer(modifier = Modifier.width(6.dp))
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -347,51 +351,74 @@ fun CartItemCard(
             Column(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.SpaceBetween,
-//                modifier = Modifier.fillMaxHeight()
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    IconButton(
+                    OutlinedIconButton(
                         onClick = {
                             if (currentQuantity > 1) {
                                 onQuantityChange(currentQuantity - 1)
                             }
                         },
+                        enabled = !isSyncing,
+                        shape = RoundedCornerShape(15.dp),
                     ) {
                         Icon(
                             imageVector = Icons.Default.Remove,
                             contentDescription = "Зменшити",
                             modifier = Modifier
-                                .size(30.dp)
+                                .size(35.dp)
                                 .background(
-                                    color = MaterialTheme.colorScheme.secondaryContainer,
-                                    shape = CircleShape
+                                    color = if (!isSyncing)
+                                        MaterialTheme.colorScheme.secondaryContainer
+                                    else
+                                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                                    shape = RoundedCornerShape(11.dp)
                                 )
                         )
                     }
 
-                    Text(
-                        text = currentQuantity.toString(),
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                        fontWeight = FontWeight.Bold
-                    )
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.width(30.dp)
+                    ) {
+                        Text(
+                            text = currentQuantity.toString(),
+                            modifier = Modifier.padding(horizontal = 4.dp),
+                            fontWeight = FontWeight.Bold
+                        )
 
-                    IconButton(
+                        if (isSyncing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .padding(1.dp),
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    }
+
+                    OutlinedIconButton(
                         onClick = {
                             if (currentQuantity < stockQuantity) {
                                 onQuantityChange(currentQuantity + 1)
                             }
                         },
+                        enabled = !isSyncing,
+                        shape = RoundedCornerShape(15.dp),
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Збільшити",
                             modifier = Modifier
-                                .size(30.dp)
+                                .size(35.dp)
                                 .background(
-                                    color = MaterialTheme.colorScheme.secondaryContainer,
-                                    shape = CircleShape
+                                    color = if (!isSyncing)
+                                        MaterialTheme.colorScheme.secondaryContainer
+                                    else
+                                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                                    shape = RoundedCornerShape(11.dp)
                                 )
                         )
                     }
@@ -404,15 +431,15 @@ fun CartItemCard(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(15.dp))
                             .background(MaterialTheme.colorScheme.errorContainer)
-                            .clickable { onRemoveItem() },
+                            .clickable(enabled = !isSyncing) { onRemoveItem() },
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = "Видалити з вибраного",
+                            contentDescription = "Видалити з кошика",
                             tint = MaterialTheme.colorScheme.onErrorContainer,
                         )
                     }
@@ -453,14 +480,14 @@ fun EmptyCartView(
 
         StyledButton(
             modifier = Modifier
+                .fillMaxWidth()
                 .padding(vertical = 25.dp)
-                .fillMaxWidth(),
+                .height(50.dp),
             onClick = onContinueShopping,
             content = {
                 Text(
                     text = "Продовжити покупки",
                     fontSize = 16.sp,
-                    color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
             },
@@ -520,7 +547,6 @@ fun NotLoggedInView(
                 Text(
                     text = "Увійти",
                     fontSize = 16.sp,
-                    color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
             }

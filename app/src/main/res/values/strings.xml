@@ -4,13 +4,17 @@
     <string name="register_title">Реєстрація</string>
     <string name="enter_email">Введіть email</string>
     <string name="enter_password">Введіть пароль</string>
-    <string name="enter_first_name">Введіть ім\'я</string>
-    <string name="enter_last_name">Введіть прізвище</string>
+    <string name="enter_first_name">Ім\'я</string>
+    <string name="enter_last_name">Прізвище</string>
     <string name="login">Увійти</string>
     <string name="register">Зареєструватися</string>
     <string name="forgot_password">Забули пароль?</string>
-    <string name="not_registered">Ще не зареєстровані? Зареєструйтеся</string>
+    <string name="not_registered">Ще не зареєстровані? Зареєструватися</string>
     <string name="already_registered">Вже зареєстровані? Увійти</string>
     <string name="login_to_your_account">Увійдіть до свого облікового запису</string>
     <string name="logout">Вийти з облікового запису</string>
+    <string name="my_orders">Мої замовлення</string>
+    <string name="invalid_email">Введіть коректну електронну адресу</string>
+    <string name="invalid_credentials">Невірний логін або пароль. Будь ласка, перевірте введені дані.</string>
+    <string name="invalid_password">Пароль повинен бути більше 5 символів</string>
 </resources>
